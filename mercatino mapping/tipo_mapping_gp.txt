@@ -1,0 +1,5 @@
+{
+    "Nuovo / Ex Demo in pronta consegna": "1pc",
+    "Nuovo / Ex-Demo": "1",
+    "Annunci Usato": "2"
+}

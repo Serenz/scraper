@@ -1,0 +1,6 @@
+{
+    "Automatico": "",
+    "per Data": "data",
+    "per Prezzo Crescente": "prezzo",
+    "per Prezzo Decrescente": "prezzodesc"
+}
