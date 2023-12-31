@@ -1,5 +1,5 @@
 {
-    1: {
+    "1": {
         "Synth a tastiera / Modulari": 1,
         "Workstation a tastiera": 2,
         "Digital / Stage Piano": 4,
@@ -21,7 +21,7 @@
         "Altri accessori per tastiera": 10,
         "Cavi audio e adattatori": 83
     },
-    2: {
+    "2": {
         "Chitarre elettriche": 17,
         "Chitarre semiacustiche": 18,
         "Chitarre acustiche": 19,
@@ -51,7 +51,7 @@
         "Altri accessori per chitarra": 27,
         "Cavi audio e adattatori": 83
     },
-    3: {
+    "3": {
         "Bassi elettrici 4 corde": 29,
         "Bassi elettrici 5/6/+ corde": 30,
         "Bassi acustici": 31,
@@ -79,7 +79,7 @@
         "Altri accessori per basso": 38,
         "Cavi audio e adattatori": 83
     },
-    4: {
+    "4": {
         "Batterie acustiche - Set completi": 40,
         "Batterie elettroniche - Set completi": 41,
         "Batterie elettroniche - Moduli / Pad": 269,
@@ -106,7 +106,7 @@
         "Prodotti isolamento acustico": 77,
         "Altri accessori per batteria": 52
     },
-    5: {
+    "5": {
         "Sax": 53,
         "Clarinetti": 54,
         "Flauti": 55,
@@ -127,7 +127,7 @@
         "Leggii e altri supporti": 302,
         "Fiati - Altro / Accessori": 62
     },
-    6: {
+    "6": {
         "Violini / Viole": 65,
         "Violoncelli / Contrabbassi": 66,
         "Mandolini / Ukulele / Banjo": 68,
@@ -143,7 +143,7 @@
         "Leggii e altri supporti": 302,
         "Altri accessori per strumenti a corda": 71
     },
-    7: {
+    "7": {
         "Mixer analogici": 74,
         "Mixer digitali": 75,
         "Equalizzatori": 78,
@@ -174,7 +174,7 @@
         "Cavi audio e adattatori": 83,
         "Prodotti isolamento acustico": 77
     },
-    8: {
+    "8": {
         "Mixer analogici": 74,
         "Mixer digitali": 75,
         "Equalizzatori": 78,
@@ -198,7 +198,7 @@
         "Tralicci / Americana / Supporti": 308,
         "Altre attrezzature live": 155
     },
-    9: {
+    "9": {
         "CD Player / Mp3 per DJ": 105,
         "Consolle / Controller per DJ": 280,
         "Giradischi e Testine per DJ": 107,
@@ -216,7 +216,7 @@
         "Altri accessori per DJ": 108,
         "Cavi audio e adattatori": 83
     },
-    10: {
+    "10": {
         "Teste mobili": 114,
         "Scanner": 115,
         "Laser": 116,
@@ -234,7 +234,7 @@
         "Altri accessori per lighting": 124,
         "Videoproiettori / Accessori video": 121
     },
-    11: {
+    "11": {
         "CD Italiani": 111,
         "CD Stranieri": 112,
         "Dischi in vinile": 113,
@@ -249,7 +249,7 @@
         "Libri - Altro": 133,
         "Riviste Musicali": 295
     },
-    12: {
+    "12": {
         "Magliette / Felpe": 283,
         "Cappellini": 284,
         "Altri prodotti abbigliamento": 285,

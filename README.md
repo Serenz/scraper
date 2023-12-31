@@ -1,2 +1,2 @@
 # scraper
-A scraping tool for tracking newky posted articles on subito.it and mercatinomusicale.com
+A scraping tool for tracking newly posted articles on subito.it and mercatinomusicale.com

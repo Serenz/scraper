@@ -18,7 +18,7 @@ params = {
     'shp': 'false', #spedizione disponibile (ture/false)
     'urg': 'false', #annunci urgenti (true/false)
     'sort': 'datedesc', #(relevance/datadesc/priceasc/pricedesc) priceasc = dal meno caro
-    'lim': '1',
+    'lim': '10',
     'start': '0',
 }
 
