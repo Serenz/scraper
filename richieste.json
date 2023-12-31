@@ -1,0 +1,81 @@
+{
+    "0": {
+        "params": {
+            "q": "",
+            "c": "",
+            "t": "s",
+            "r": "",
+            "qso": "true",
+            "shp": "false",
+            "urg": "false",
+            "sort": "datedesc",
+            "lim": "10",
+            "start": "0"
+        },
+        "website": "subito",
+        "active": 1,
+        "products": [
+            "id:ad:ddbffbc2-8445-4ad2-8cda-978f3c3c3293:list:528821074",
+            "id:ad:560269706:list:528821229",
+            "id:ad:560269714:list:528821262",
+            "id:ad:99b6ab85-4cb2-40da-9571-8effc639d2ca:list:528821260",
+            "id:ad:560269712:list:528821259",
+            "id:ad:b3f9a686-5679-4511-b817-f2b748a78f1e:list:528820078",
+            "id:ad:30de793d-f965-4ac0-ba06-57b452180d41:list:528821256",
+            "id:ad:d5768ed5-d8a9-4df7-a2d4-07c5ee6e34a3:list:528821255",
+            "id:ad:0c0eb6e5-e7d0-43b8-88c7-7748c2f7667b:list:528821254",
+            "id:ad:7aeeb10a-e3f1-4b06-ac54-123cd56f5490:list:528821251",
+            "id:ad:488c9159-f432-4dff-9dca-221ceedc9c3b:list:528821252",
+            "id:ad:560269772:list:528821435",
+            "id:ad:890d318c-8be1-4865-acde-8c261465ea1a:list:528821434",
+            "id:ad:15d58964-2894-42e0-8c06-7cb4e2aaf069:list:528821433",
+            "id:ad:3d7fcb2d-0748-4b43-ad37-3636419bdf66:list:528821432",
+            "id:ad:9dcc6110-2fe3-4ddb-a18e-cce1560cbb5f:list:528821431",
+            "id:ad:560269771:list:528821430",
+            "id:ad:560269770:list:528821429",
+            "id:ad:560269769:list:528821428",
+            "id:ad:df488cff-ce32-42d9-a54d-a3de48c6f5a3:list:528821427",
+            "id:ad:8cf9dd17-73d1-4e62-ae04-af3264a6a1f2:list:528821426",
+            "id:ad:dd279635-6776-49dc-b839-db4494ec136d:list:528821593",
+            "id:ad:2aa6a135-61a8-4c58-8024-4e16ea710140:list:528821590",
+            "id:ad:560269824:list:528821589",
+            "id:ad:d82836cf-8511-40c1-815f-a0530e89ae91:list:528821587",
+            "id:ad:e1a35c61-bbdf-4e05-93be-929b4d9cf8d4:list:528821588",
+            "id:ad:8760def7-a794-4ce6-ba52-3837ca717d25:list:528821586",
+            "id:ad:4bf31038-cfad-4af1-93b4-47ae17af40be:list:528821364",
+            "id:ad:560269823:list:528821585",
+            "id:ad:8663571d-03f4-4fdb-ba94-163524b4b42c:list:528821584",
+            "id:ad:00532c79-7191-4e76-80be-04ec6f6c9598:list:528821583",
+            "id:ad:4999d371-b68e-43f2-8a32-8d722c5534d4:list:528821755",
+            "id:ad:560269869:list:528821756",
+            "id:ad:560269868:list:528821754",
+            "id:ad:560269867:list:528821753",
+            "id:ad:eb3b151d-93da-4b89-b631-8e5b93900592:list:528821752",
+            "id:ad:560269866:list:528821751",
+            "id:ad:94fa59f7-194b-4ad9-a55a-278acba76a83:list:528821750",
+            "id:ad:9a0f0cc4-f648-4a75-9b4a-b28f14bbba8d:list:528821749",
+            "id:ad:56006a31-83b9-454d-aa28-03010712366e:list:528821748",
+            "id:ad:560269841:list:528821654"
+        ]
+    },
+    "1": {
+        "params": {
+            "q": "Tastiera Yamaha",
+            "c": "19",
+            "t": "s",
+            "r": "12",
+            "qso": "true",
+            "shp": "true",
+            "urg": "false",
+            "sort": "datedesc",
+            "lim": "10",
+            "start": "0"
+        },
+        "website": "subito",
+        "active": 1,
+        "products": [
+            "id:ad:0d122eb3-bb3e-469b-ac17-5b8e2a418216:list:523967036",
+            "id:ad:074f7e22-7126-492b-8c66-54376aaec1a5:list:517719060"
+        ]
+    }
+}
