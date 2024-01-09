@@ -128,7 +128,7 @@ class App(ctk.CTk):
         self.subito_type.grid(row=4, column=2, padx=20)
 
         self.subito_search_button = ctk.CTkButton(self.searchview.tab("Subito"), text="Cerca", font=("Calibri", 20),
-                                                  command=self.validate_subito)
+                                                  command=self.open_subito_search_confirmation)
         self.subito_search_button.grid(row=5, column=2, padx=60, pady=40)
 
 
@@ -146,41 +146,6 @@ class App(ctk.CTk):
         self.subito_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.subito_list.grid_columnconfigure((1,2,3,4,5), weight=1)
         self.subito_list.grid_columnconfigure(0, weight=0)
-
-        # self.subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="w", font=("Calibri",25))
-        # self.subito_listing_active_label.grid(row=0, column=0, padx=10, pady=(0,0))
-        # self.subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="w", font=("Calibri",25))
-        # self.subito_listing_keyword_label.grid(row=0, column=1, padx=10, pady=(0,0))
-        # self.subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="w", font=("Calibri",25))
-        # self.subito_listing_category_label.grid(row=0, column=2, padx=10, pady=(0,0))
-        # self.subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="w", font=("Calibri",25))
-        # self.subito_listing_region_label.grid(row=0, column=3, padx=10, pady=(0,0))
-        # self.subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="w", font=("Calibri",25))
-        # self.subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0,0))
-        
-        # self.subito_list_switches = []
-        # for id in (req for req in richieste.keys() if richieste[req]['website']=='subito'):
-        #     subito_header_separator = tk.ttk.Separator(self.subito_list, orient="horizontal")
-        #     subito_header_separator.grid(row=len(self.subito_list_switches)+1, column=0, columnspan=6, padx=(20,20), pady=(30,10), sticky="ew")
-
-        #     switch_var = ctk.IntVar(value=richieste[id]['active'])
-        #     switch = ctk.CTkSwitch(master=self.subito_list, variable=switch_var, text="")
-        #     switch.grid(row=len(self.subito_list_switches)+2, column=0, padx=(60,0), pady=(0, 20), sticky='ns')
-        #     switch.configure(command=lambda id=id: self.toggle_request_track(id))
-        #     self.subito_list_switches.append((switch, id))
-
-        #     keyword = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['keyword'], anchor="w", font=("Calibri",15))
-        #     keyword.grid(row=len(self.subito_list_switches)+1, column=1, padx=10, pady=(0, 20), sticky='ns')
-        #     category = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['category'], anchor="w", font=("Calibri",15))
-        #     category.grid(row=len(self.subito_list_switches)+1, column=2, padx=10, pady=(0, 20), sticky='ns')
-        #     region = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['region'], anchor="w", font=("Calibri",15))
-        #     region.grid(row=len(self.subito_list_switches)+1, column=3, padx=10, pady=(0, 20), sticky='ns')
-        #     tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="w", font=("Calibri",15))
-        #     tipo.grid(row=len(self.subito_list_switches)+1, column=4, padx=10, pady=(0, 20), sticky='ns')
-        #     delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="w", font=("Calibri",20), fg_color="red", width=85)
-        #     delete.configure(command=lambda id=id: self.reload_subito_listing(id))
-        #     delete.grid(row=len(self.subito_list_switches)+1, column=5, padx=10, pady=(0, 20), sticky='ns')
-            
 
 
 
@@ -237,30 +202,53 @@ class App(ctk.CTk):
             save_requests()
 
 
+
+
+    def open_delete_confirmation(self, id: str):
+        self.delete_confirmation = ctk.CTkToplevel()
+        self.delete_confirmation.title("Conferma eliminazione")
+        confirmation_label = ctk.CTkLabel(self.delete_confirmation, text="La cancellazione è irreversibile\nPerderai ogni traccia di questo prodotto", font=("Calibri",20))
+        confirmation_label.grid(row=0, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
+        confirm_button = ctk.CTkButton(self.delete_confirmation, text="CONFERMA", fg_color="red", anchor="center", font=("Calibri",15), width=100)
+        confirm_button.configure(command=lambda id=id: self.delete_request_track(id))
+        confirm_button.grid(row=1, column=0, padx=(20, 20), pady=(10, 20))
+        abort_button = ctk.CTkButton(self.delete_confirmation, text="ANNULLA", anchor="center", font=("Calibri",15), width=100)
+        abort_button.configure(command=self.delete_confirmation.destroy)
+        abort_button.grid(row=1, column=1, padx=(20, 20), pady=(10, 20))
+        self.delete_confirmation.focus_force()
+
+
     def delete_request_track(self, id: str):
+        website = richieste[id]["website"]
         del richieste[id]
+        self.delete_confirmation.destroy()
         save_requests()
-        # load_requests()
+        if website == 'subito':
+            self.reload_subito_listing()
+        else:
+            pass
+            #TODO
+            #self.reload_mercatino_listing()
 
 
     def load_subito_listing_headers(self):
-        subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="w", font=("Calibri",25))
+        subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="center", font=("Calibri",25))
         subito_listing_active_label.grid(row=0, column=0, padx=10, pady=(0,0))
-        subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="w", font=("Calibri",25))
+        subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="center", font=("Calibri",25))
         subito_listing_keyword_label.grid(row=0, column=1, padx=10, pady=(0,0))
-        subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="w", font=("Calibri",25))
+        subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="center", font=("Calibri",25))
         subito_listing_category_label.grid(row=0, column=2, padx=10, pady=(0,0))
-        subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="w", font=("Calibri",25))
+        subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="center", font=("Calibri",25))
         subito_listing_region_label.grid(row=0, column=3, padx=10, pady=(0,0))
-        subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="w", font=("Calibri",25))
+        subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="center", font=("Calibri",25))
         subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0,0))
 
 
     def reload_subito_listing(self, id: str=None):
-        if id:
-            self.delete_request_track(id)
+        print("Dopo check")
         for widget in self.subito_list.winfo_children():
             widget.destroy()
+        print("Dopo reset widgets")
 
         self.load_subito_listing_headers()    
         self.subito_list_switches = []
@@ -274,16 +262,16 @@ class App(ctk.CTk):
             switch.configure(command=lambda id=id: self.toggle_request_track(id))
             self.subito_list_switches.append((switch, id))
 
-            keyword = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['keyword'], anchor="w", font=("Calibri",15))
+            keyword = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['keyword'], anchor="center", font=("Calibri",15))
             keyword.grid(row=len(self.subito_list_switches)+1, column=1, padx=10, pady=(0, 20), sticky='ns')
-            category = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['category'], anchor="w", font=("Calibri",15))
+            category = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['category'], anchor="center", font=("Calibri",15))
             category.grid(row=len(self.subito_list_switches)+1, column=2, padx=10, pady=(0, 20), sticky='ns')
-            region = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['region'], anchor="w", font=("Calibri",15))
+            region = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['region'], anchor="center", font=("Calibri",15))
             region.grid(row=len(self.subito_list_switches)+1, column=3, padx=10, pady=(0, 20), sticky='ns')
-            tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="w", font=("Calibri",15))
+            tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="center", font=("Calibri",15))
             tipo.grid(row=len(self.subito_list_switches)+1, column=4, padx=10, pady=(0, 20), sticky='ns')
-            delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="w", font=("Calibri",20), fg_color="red", width=85)
-            delete.configure(command=lambda id=id: self.reload_subito_listing(id))
+            delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="center", font=("Calibri",20), fg_color="red", width=85)
+            delete.configure(command=lambda id=id: self.open_delete_confirmation(id))
             delete.grid(row=len(self.subito_list_switches)+1, column=5, padx=10, pady=(0, 20), sticky='ns')
         self.subito_list.update()
 
@@ -314,10 +302,28 @@ class App(ctk.CTk):
         #     self.subito_category.event_generate("<FocusOut>")  # Genera un evento di uscita focus
         #     self.subito_category.event_generate("<FocusIn>")  # Genera un evento di entrata focus
 
+    def open_subito_search_confirmation(self):
+        keyword = self.subito_keyword.get()
+        if keyword:
+            self.validate_subito()
+        else:
+            self.subito_search_confirmation = ctk.CTkToplevel()
+            self.subito_search_confirmation.title("Conferma ricerca")
+            confirmation_label = ctk.CTkLabel(self.subito_search_confirmation, text="Stai provando a fare una ricerca senza\nspecificare alcun prodotto.\nConfermi?", font=("Calibri",20))
+            confirmation_label.grid(row=0, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
+            confirm_button = ctk.CTkButton(self.subito_search_confirmation, text="CONFERMA", fg_color="green", anchor="center", font=("Calibri",15), width=100)
+            confirm_button.configure(command=self.validate_subito)
+            confirm_button.grid(row=1, column=1, padx=(20, 20), pady=(10, 20))
+            abort_button = ctk.CTkButton(self.subito_search_confirmation, text="ANNULLA", anchor="center", font=("Calibri",15), width=100)
+            abort_button.configure(command=self.subito_search_confirmation.destroy)
+            abort_button.grid(row=1, column=0, padx=(20, 20), pady=(10, 20))
+            self.subito_search_confirmation.focus_force()
+
+
 
     def validate_subito(self):
+        self.subito_search_confirmation.destroy()
         keyword = self.subito_keyword.get()
-        #TODO controllare se la keyword è inserita, ed eventualmente aprire una TopLevel per confermare
         category = self.subito_category.get()
         region = self.subito_region.get()
         shipping = self.subito_shipping.get() #1 checked, 0 not checked
