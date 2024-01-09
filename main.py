@@ -50,41 +50,6 @@ def save_requests():
         json.dump(richieste, f, indent=4)
 
 
-def delete_request(id):
-    del richieste[id]
-
-
-# def delete_m_request(id):
-#     for req in m_requests:
-#         if req.get('id') == id:
-#             m_requests.remove(req)
-#             break 
-
-def add_request(params, website, beauty):
-    if richieste:
-        id = str(int(max(richieste.keys())) + 1)
-    else:
-        id = str(0)
-    new_req = True
-    for req in richieste.keys():
-        if richieste[req]['params'] == params and richieste[req]['website'] == website:
-            new_req = False
-    if new_req:
-        richieste[id] = {'params': params, 'website': website, 'active': 1, 'products': [], 'beauty': beauty}
-
-
-def toggle_request_track(id):
-    if richieste[id]['active']:
-        richieste[id]['active'] = 0
-    else:
-        richieste[id]['active'] = 1
-    save_requests()
-    load_requests()
-
-
-
-
-
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
 
@@ -95,11 +60,10 @@ class App(ctk.CTk):
 
         # configure window
         self.title("Products Notifier")
-        self.geometry(f"{1300}x{900}")
+        self.geometry(f"{1400}x{900}")
 
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
-        # self.grid_columnconfigure((2, 3), weight=0)
         self.grid_rowconfigure((0), weight=0)
         self.grid_rowconfigure((1), weight=1)
 
@@ -109,12 +73,6 @@ class App(ctk.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="Products Notifier", font=ctk.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        # self.sidebar_button_1 = ctk.CTkButton(self.sidebar_frame, text="Subito", command=self.sidebar_button_event)
-        # self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        # self.sidebar_button_2 = ctk.CTkButton(self.sidebar_frame, text="Mercatino", command=self.sidebar_button_event)
-        # self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
-        # self.sidebar_button_3 = ctk.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        # self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
         self.appearance_mode_label = ctk.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = ctk.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
@@ -126,14 +84,7 @@ class App(ctk.CTk):
                                                                command=self.change_scaling_event)
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
 
-        # create main entry and button
-        # self.entry = ctk.CTkEntry(self, placeholder_text="CTkEntry")
-        # self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
-
-        # self.main_button_1 = ctk.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        # self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
-
-
+        
         # create tabview for searching products
         self.searchview = ctk.CTkTabview(self)
         self.searchview.grid(row=0, column=1, columnspan=3, padx=(20, 20), pady=(20, 0), sticky="new")
@@ -181,23 +132,7 @@ class App(ctk.CTk):
         self.subito_search_button.grid(row=5, column=2, padx=60, pady=40)
 
 
-        # self.optionmenu_1 = ctk.CTkOptionMenu(self.searchview.tab("CTkTabview"), dynamic_resizing=False,
-        #                                                 values=["Value 1", "Value 2", "Value Long Long Long"])
-        # self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
-        # self.combobox_1 = ctk.CTkComboBox(self.searchview.tab("CTkTabview"),
-        #                                             values=["Value 1", "Value 2", "Value Long....."])
-        # self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-        # self.string_input_button = ctk.CTkButton(self.searchview.tab("CTkTabview"), text="Open CTkInputDialog",
-        #                                                    command=self.open_input_dialog_event)
-        # self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-        # self.label_tab_2 = ctk.CTkLabel(self.searchview.tab("Tab 2"), text="CTkLabel on Tab 2")
-        # self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
-
-
-
-
-
-
+        #Lista delle richieste SUBITO
         self.listview = ctk.CTkTabview(self)
         self.listview.grid(row=1, column=1, columnspan=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
         self.listview.add("Subito")
@@ -209,26 +144,129 @@ class App(ctk.CTk):
 
         self.subito_list = ctk.CTkScrollableFrame(self.listview.tab("Subito"), label_text="Tracking prodotti Subito.it")
         self.subito_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.subito_list.grid_columnconfigure((1,2,3,4), weight=1)
+        self.subito_list.grid_columnconfigure((1,2,3,4,5), weight=1)
         self.subito_list.grid_columnconfigure(0, weight=0)
 
-        self.subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="w", font=("Calibri",25))
-        self.subito_listing_active_label.grid(row=0, column=0, padx=10, pady=(0,0))
-        self.subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="w", font=("Calibri",25))
-        self.subito_listing_keyword_label.grid(row=0, column=1, padx=10, pady=(0,0))
-        self.subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="w", font=("Calibri",25))
-        self.subito_listing_category_label.grid(row=0, column=2, padx=10, pady=(0,0))
-        self.subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="w", font=("Calibri",25))
-        self.subito_listing_region_label.grid(row=0, column=3, padx=10, pady=(0,0))
-        self.subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="w", font=("Calibri",25))
-        self.subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0,0))
-        # self.subito_header_separator = tk.ttk.Separator(self.subito_list, orient="horizontal")
-        # self.subito_header_separator.grid(row=1, column=0, columnspan=5, pady=(10,20), sticky="ew")
+        # self.subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="w", font=("Calibri",25))
+        # self.subito_listing_active_label.grid(row=0, column=0, padx=10, pady=(0,0))
+        # self.subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="w", font=("Calibri",25))
+        # self.subito_listing_keyword_label.grid(row=0, column=1, padx=10, pady=(0,0))
+        # self.subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="w", font=("Calibri",25))
+        # self.subito_listing_category_label.grid(row=0, column=2, padx=10, pady=(0,0))
+        # self.subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="w", font=("Calibri",25))
+        # self.subito_listing_region_label.grid(row=0, column=3, padx=10, pady=(0,0))
+        # self.subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="w", font=("Calibri",25))
+        # self.subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0,0))
         
+        # self.subito_list_switches = []
+        # for id in (req for req in richieste.keys() if richieste[req]['website']=='subito'):
+        #     subito_header_separator = tk.ttk.Separator(self.subito_list, orient="horizontal")
+        #     subito_header_separator.grid(row=len(self.subito_list_switches)+1, column=0, columnspan=6, padx=(20,20), pady=(30,10), sticky="ew")
+
+        #     switch_var = ctk.IntVar(value=richieste[id]['active'])
+        #     switch = ctk.CTkSwitch(master=self.subito_list, variable=switch_var, text="")
+        #     switch.grid(row=len(self.subito_list_switches)+2, column=0, padx=(60,0), pady=(0, 20), sticky='ns')
+        #     switch.configure(command=lambda id=id: self.toggle_request_track(id))
+        #     self.subito_list_switches.append((switch, id))
+
+        #     keyword = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['keyword'], anchor="w", font=("Calibri",15))
+        #     keyword.grid(row=len(self.subito_list_switches)+1, column=1, padx=10, pady=(0, 20), sticky='ns')
+        #     category = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['category'], anchor="w", font=("Calibri",15))
+        #     category.grid(row=len(self.subito_list_switches)+1, column=2, padx=10, pady=(0, 20), sticky='ns')
+        #     region = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['region'], anchor="w", font=("Calibri",15))
+        #     region.grid(row=len(self.subito_list_switches)+1, column=3, padx=10, pady=(0, 20), sticky='ns')
+        #     tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="w", font=("Calibri",15))
+        #     tipo.grid(row=len(self.subito_list_switches)+1, column=4, padx=10, pady=(0, 20), sticky='ns')
+        #     delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="w", font=("Calibri",20), fg_color="red", width=85)
+        #     delete.configure(command=lambda id=id: self.reload_subito_listing(id))
+        #     delete.grid(row=len(self.subito_list_switches)+1, column=5, padx=10, pady=(0, 20), sticky='ns')
+            
+
+
+
+
+
+
+        self.appearance_mode_optionemenu.set("Dark")
+        self.scaling_optionemenu.set("100%")
+   
+        self.reload_subito_listing()
+        #Threading
+        self.thread = threading.Thread(target=self.make_requests)
+        self.thread.daemon = True
+        self.thread.start()
+
+    def open_input_dialog_event(self):
+        dialog = ctk.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
+        print("CTkInputDialog:", dialog.get_input())
+
+
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        ctk.set_appearance_mode(new_appearance_mode)
+
+
+    def change_scaling_event(self, new_scaling: str):
+        new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        ctk.set_widget_scaling(new_scaling_float)
+
+
+    def sidebar_button_event(self):
+        print("sidebar_button click")
+
+
+    def toggle_request_track(self, id: str):
+        richiesta_attiva = richieste[id]['active']
+        richieste[id]['active'] = 1 - richiesta_attiva
+        save_requests()
+        load_requests()
+
+
+    def add_request(self, params, website, beauty):
+        if richieste:
+            id = str(max((int(x) for x in richieste.keys())) + 1)
+        else:
+            id = str(0)
+        new_req = True
+        for req in richieste.keys():
+            if richieste[req]['params'] == params and richieste[req]['website'] == website:
+                print("Stai già tracciando lo stesso prodotto")
+                new_req = False
+        if new_req:
+            richieste[id] = {'params': params, 'website': website, 'active': 1, 'products': [], 'beauty': beauty}
+            print("Richiesta aggiunta")
+            save_requests()
+
+
+    def delete_request_track(self, id: str):
+        del richieste[id]
+        save_requests()
+        # load_requests()
+
+
+    def load_subito_listing_headers(self):
+        subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="w", font=("Calibri",25))
+        subito_listing_active_label.grid(row=0, column=0, padx=10, pady=(0,0))
+        subito_listing_keyword_label = ctk.CTkLabel(self.subito_list, text="OGGETTO", anchor="w", font=("Calibri",25))
+        subito_listing_keyword_label.grid(row=0, column=1, padx=10, pady=(0,0))
+        subito_listing_category_label = ctk.CTkLabel(self.subito_list, text="CATEGORIA", anchor="w", font=("Calibri",25))
+        subito_listing_category_label.grid(row=0, column=2, padx=10, pady=(0,0))
+        subito_listing_region_label = ctk.CTkLabel(self.subito_list, text="REGIONE", anchor="w", font=("Calibri",25))
+        subito_listing_region_label.grid(row=0, column=3, padx=10, pady=(0,0))
+        subito_listing_type_label = ctk.CTkLabel(self.subito_list, text="TIPO", anchor="w", font=("Calibri",25))
+        subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0,0))
+
+
+    def reload_subito_listing(self, id: str=None):
+        if id:
+            self.delete_request_track(id)
+        for widget in self.subito_list.winfo_children():
+            widget.destroy()
+
+        self.load_subito_listing_headers()    
         self.subito_list_switches = []
         for id in (req for req in richieste.keys() if richieste[req]['website']=='subito'):
             subito_header_separator = tk.ttk.Separator(self.subito_list, orient="horizontal")
-            subito_header_separator.grid(row=len(self.subito_list_switches)+1, column=0, columnspan=5, padx=(20,20), pady=(30,10), sticky="ew")
+            subito_header_separator.grid(row=len(self.subito_list_switches)+1, column=0, columnspan=6, padx=(20,20), pady=(30,10), sticky="ew")
 
             switch_var = ctk.IntVar(value=richieste[id]['active'])
             switch = ctk.CTkSwitch(master=self.subito_list, variable=switch_var, text="")
@@ -244,78 +282,12 @@ class App(ctk.CTk):
             region.grid(row=len(self.subito_list_switches)+1, column=3, padx=10, pady=(0, 20), sticky='ns')
             tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="w", font=("Calibri",15))
             tipo.grid(row=len(self.subito_list_switches)+1, column=4, padx=10, pady=(0, 20), sticky='ns')
-            
+            delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="w", font=("Calibri",20), fg_color="red", width=85)
+            delete.configure(command=lambda id=id: self.reload_subito_listing(id))
+            delete.grid(row=len(self.subito_list_switches)+1, column=5, padx=10, pady=(0, 20), sticky='ns')
+        self.subito_list.update()
 
 
-
-
-
-
-
-
-        # create scrollable frame
-        # self.scrollable_frame = ctk.CTkScrollableFrame(self, label_text="CTkScrollableFrame")
-        # self.scrollable_frame.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        # self.scrollable_frame.grid_columnconfigure(0, weight=1)
-        # self.scrollable_frame_switches = []
-        # for i in range(100):
-        #     switch = ctk.CTkSwitch(master=self.scrollable_frame, text=f"CTkSwitch {i}")
-        #     switch.grid(row=i, column=0, padx=10, pady=(0, 20))
-        #     self.scrollable_frame_switches.append(switch)
-
-        # # create checkbox and switch frame
-        # self.checkbox_slider_frame = ctk.CTkFrame(self)
-        # self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        # self.checkbox_1 = ctk.CTkCheckBox(master=self.checkbox_slider_frame)
-        # self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
-        # self.checkbox_2 = ctk.CTkCheckBox(master=self.checkbox_slider_frame)
-        # self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        # self.checkbox_3 = ctk.CTkCheckBox(master=self.checkbox_slider_frame)
-        # self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
-
-        # # set default values
-        # # self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
-        # self.checkbox_3.configure(state="disabled")
-        # self.checkbox_1.select()
-        # self.scrollable_frame_switches[0].select()
-        # self.scrollable_frame_switches[4].select()
-        # self.radio_button_3.configure(state="disabled")
-        self.appearance_mode_optionemenu.set("Dark")
-        self.scaling_optionemenu.set("100%")
-        # self.optionmenu_1.set("CTkOptionmenu")
-        # self.combobox_1.set("CTkComboBox")
-        # self.slider_1.configure(command=self.progressbar_2.set)
-        # self.slider_2.configure(command=self.progressbar_3.set)
-        # self.progressbar_1.configure(mode="indeterminnate")
-        # self.progressbar_1.start()
-        # # self.textbox.insert("0.0", "CTkTextbox\n\n" + "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n\n" * 20)
-        # self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
-        # self.seg_button_1.set("Value 2")
-
-        #Threading
-        self.thread = threading.Thread(target=self.make_requests)
-        self.thread.daemon = True
-        self.thread.start()
-
-    def open_input_dialog_event(self):
-        dialog = ctk.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
-        print("CTkInputDialog:", dialog.get_input())
-
-    def change_appearance_mode_event(self, new_appearance_mode: str):
-        ctk.set_appearance_mode(new_appearance_mode)
-
-    def change_scaling_event(self, new_scaling: str):
-        new_scaling_float = int(new_scaling.replace("%", "")) / 100
-        ctk.set_widget_scaling(new_scaling_float)
-
-    def sidebar_button_event(self):
-        print("sidebar_button click")
-
-    def toggle_request_track(self, id: str):
-        richiesta_attiva = richieste[id]['active']
-        richieste[id]['active'] = 1 - richiesta_attiva
-        save_requests()
-        load_requests()
 
     def autocomplete(self, event):
         typed_text = self.subito_category.get()  # Ottieni il testo digitato nel Combobox
@@ -342,6 +314,7 @@ class App(ctk.CTk):
         #     self.subito_category.event_generate("<FocusOut>")  # Genera un evento di uscita focus
         #     self.subito_category.event_generate("<FocusIn>")  # Genera un evento di entrata focus
 
+
     def validate_subito(self):
         keyword = self.subito_keyword.get()
         #TODO controllare se la keyword è inserita, ed eventualmente aprire una TopLevel per confermare
@@ -351,7 +324,7 @@ class App(ctk.CTk):
         title = self.subito_titlesearch.get()
         tipo = self.subito_type.get()
         if category in S_CATEGORIE.keys():
-            print("OK, procedo")
+            print("Categoria corretta")
             params = {
                 'q': keyword,
                 'c': str(S_CATEGORIE.get(category)),
@@ -370,15 +343,18 @@ class App(ctk.CTk):
                 'type': tipo,
                 'region': region
             }
-            add_request(params, 'subito', beauty)
+            self.add_request(params, 'subito', beauty)
+            self.reload_subito_listing()
         else:
             print("Seleziona un'altra categoria")
         #TODO controllare che, se scritto a mano, la categoria sia presente nella lista
         #TODO far funzionare l'autocomplete, fondamentale per avere meno problemi con il check
         pass
 
+
     async def telegram_message(self, message):
         await bot.send_message(chat_id=chat_id, text=message)
+
 
     def make_requests(self):
         while True:
@@ -411,7 +387,7 @@ class App(ctk.CTk):
             print("Fine richieste")
             time.sleep(30) 
 
-                    
+        
 
 if __name__ == "__main__":
     load_mappings()
