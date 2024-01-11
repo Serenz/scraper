@@ -305,6 +305,7 @@ class App(ctk.CTk):
     def open_subito_search_confirmation(self):
         keyword = self.subito_keyword.get()
         if keyword:
+            self.subito_search_confirmation = None
             self.validate_subito()
         else:
             self.subito_search_confirmation = ctk.CTkToplevel()
@@ -320,9 +321,20 @@ class App(ctk.CTk):
             self.subito_search_confirmation.focus_force()
 
 
+    def open_wrong_category(self, category: str):
+        self.wrong_category = ctk.CTkToplevel()
+        self.wrong_category.title("Categoria incorretta")
+        wrong_label = ctk.CTkLabel(self.wrong_category, text=f"La categoria \"{category}\" che hai inserito,\nnon è presente nella lista", font=("Calibri",20))
+        wrong_label.grid(row=0, column=0, padx=(20, 20), pady=(20, 20))       
+        abort_button = ctk.CTkButton(self.wrong_category, text="CHIUDI", anchor="center", font=("Calibri",15), width=100)
+        abort_button.configure(command=self.wrong_category.destroy)
+        abort_button.grid(row=1, column=0, padx=(20, 20), pady=(10, 20))
+        self.wrong_category.focus_force()
+
 
     def validate_subito(self):
-        self.subito_search_confirmation.destroy()
+        if self.subito_search_confirmation:
+            self.subito_search_confirmation.destroy()
         keyword = self.subito_keyword.get()
         category = self.subito_category.get()
         region = self.subito_region.get()
@@ -330,7 +342,6 @@ class App(ctk.CTk):
         title = self.subito_titlesearch.get()
         tipo = self.subito_type.get()
         if category in S_CATEGORIE.keys():
-            print("Categoria corretta")
             params = {
                 'q': keyword,
                 'c': str(S_CATEGORIE.get(category)),
@@ -352,10 +363,7 @@ class App(ctk.CTk):
             self.add_request(params, 'subito', beauty)
             self.reload_subito_listing()
         else:
-            print("Seleziona un'altra categoria")
-        #TODO controllare che, se scritto a mano, la categoria sia presente nella lista
-        #TODO far funzionare l'autocomplete, fondamentale per avere meno problemi con il check
-        pass
+            self.open_wrong_category(category)
 
 
     async def telegram_message(self, message):
@@ -374,19 +382,24 @@ class App(ctk.CTk):
                         for product in j_response['ads']:
                             if product['urn'] not in old_products:
                                 #TODO send_message()
+                                keyword = richieste[req]["beauty"]["keyword"]
+                                category = richieste[req]["beauty"]["category"]
+                                region = richieste[req]["beauty"]["region"]
                                 title = product['subject']
-                                # print(json.dumps(product, indent=4))
                                 price_elem = next((elem for elem in product['features'] if elem.get('label')=="Prezzo"), None)
+                                url = product["urls"]["mobile"]
                                 if price_elem:
                                     price = price_elem['values'][0]['key']
-                                    message = f'Trovato nuovo prodotto per -{richieste[req]["params"]["q"]}-!\n{title}\n{price}€\n'
+                                    message = f'Trovato nuovo prodotto per -{keyword}/{category}- in {region}!\n{title}\n{price}€\n{url}'
                                 else:
-                                    message = f'Trovato nuovo prodotto per -{richieste[req]["params"]["q"]}-!\n{title}\n'
+                                    message = f'Trovato nuovo prodotto per -{keyword}/{category}- in {region}!\n{title}\n{url}'
                                 print(message)
                                 self.telegram_message(message)
                                 # bot.send_message(chat_id=chat_id, text=message)
 
                                 richieste[req]['products'].append(product['urn'])
+                        if len(richieste[req]['products']) > 150:
+                            richieste[req]['products'] = richieste[req]['products'][30:]    
                     else:
                         pass
                         #TODO parte di mercatino
