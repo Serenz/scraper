@@ -8,10 +8,11 @@ import tkinter.messagebox
 import customtkinter as ctk
 from headers import SUBITO_HEADERS, SUBITO_URL
 from telegram import Bot
-from my_token import TOKEN
+from my_token import TOKEN, CHAT_ID
 
 bot = Bot(token=TOKEN)
-chat_id = "146142754"
+chat_id = CHAT_ID
+#TODO ? Prendere da file di testo il chat_id, aprendo una finestra nel caso in cui non esista il file, e facendolo inserire all'utente dando istruzioni
 
 def load_mappings():
     global M_BRANDS, M_CATEGORIE, M_ORDINE, M_REPARTO, M_TIPO, M_ZONA, S_CATEGORIE, S_REGIONI, S_TYPE
