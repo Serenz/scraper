@@ -95,93 +95,6 @@ class App(ctk.CTk):
         self.searchview.tab("Subito").grid_columnconfigure((0, 1, 2), weight=1)  # configure grid of individual tabs
         self.searchview.tab("Mercatino").grid_columnconfigure((0, 1, 2), weight=1)
 
-        # Sezione di ricerca su Subito
-        self.subito_keyword_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Cosa cerchi?", anchor="w",
-                                                 font=("Calibri", 17))
-        self.subito_keyword_label.grid(row=0, column=0, padx=20, pady=(10, 0))
-        self.subito_keyword = ctk.CTkEntry(self.searchview.tab("Subito"),
-                                           placeholder_text="Tastiera, Chitarra, Microfono", width=200, height=30)
-        self.subito_keyword.grid(row=1, column=0, padx=20)
-
-        self.subito_category_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="In quale categoria?", anchor="w",
-                                                  font=("Calibri", 17))
-        self.subito_category_label.grid(row=0, column=1, padx=20, pady=(10, 0))
-        self.subito_category = ctk.CTkComboBox(self.searchview.tab("Subito"), width=200,
-                                               values=list(S_CATEGORIE.keys()))
-        self.subito_category.grid(row=1, column=1, padx=20)
-        self.subito_category.bind('<KeyRelease>', self.autocomplete_subito_category)
-
-        self.subito_region_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Dove?", anchor="w",
-                                                font=("Calibri", 17))
-        self.subito_region_label.grid(row=0, column=2, padx=20, pady=(10, 0))
-        self.subito_region = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
-                                               values=list(S_REGIONI.keys()))
-        self.subito_region.grid(row=1, column=2, padx=20)
-
-        self.subito_shipping_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Spedizione", anchor="w",
-                                                  font=("Calibri", 17))
-        self.subito_shipping_label.grid(row=3, column=0, padx=20, pady=(25, 0))
-        self.subito_shipping = ctk.CTkSwitch(self.searchview.tab("Subito"),
-                                             text="Solo annunci con \nspedizione disponibile")
-        self.subito_shipping.grid(row=4, column=0, padx=20)
-
-        self.subito_titlesearch_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Restringi ricerca",
-                                                     anchor="w", font=("Calibri", 17))
-        self.subito_titlesearch_label.grid(row=3, column=1, padx=20, pady=(25, 0))
-        self.subito_titlesearch = ctk.CTkSwitch(self.searchview.tab("Subito"), text="Cerca solo nel titolo")
-        self.subito_titlesearch.grid(row=4, column=1, padx=20)
-
-        self.subito_type_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Tipo di annuncio", anchor="w",
-                                              font=("Calibri", 17))
-        self.subito_type_label.grid(row=3, column=2, padx=20, pady=(25, 0))
-        self.subito_type = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
-                                             values=list(S_TYPE.keys()))
-        self.subito_type.grid(row=4, column=2, padx=20)
-
-        self.subito_search_button = ctk.CTkButton(self.searchview.tab("Subito"), text="Cerca", font=("Calibri", 20),
-                                                  command=self.open_subito_search_confirmation)
-        self.subito_search_button.grid(row=5, column=2, padx=60, pady=40)
-
-        # parte di mercatino
-
-        # self.mercatino_keyword_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Cosa cerchi?", anchor="w", font=("Calibri",17))
-        # self.mercatino_keyword_label.grid(row=0, column=0, padx=20, pady=(10, 0))
-        # self.mercatino_keyword = ctk.CTkEntry(self.searchview.tab("Mercatino"), placeholder_text="Tastiera, Chitarra, Microfono", width=200, height=30)
-        # self.mercatino_keyword.grid(row=1, column=0, padx=20)
-
-        # self.mercatino_reparto_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Reparto:", anchor="w", font=("Calibri",17))
-        # self.mercatino_reparto_label.grid(row=0, column=1, padx=20, pady=(10, 0))
-        # self.mercatino_reparto = ctk.CTkOptionMenu(self.searchview.tab("Mercatino"), width=200,
-        #                                          values=list(M_REPARTO.keys()))
-        # self.mercatino_reparto.grid(row=1, column=1, padx=20)
-        # self.mercatino_reparto.bind("<<ComboboxSelected>>", self.on_reparto_selected)
-
-        # self.mercatino_category_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Categoria:", anchor="w", font=("Calibri",17))
-        # self.mercatino_category_label.grid(row=0, column=2, padx=20, pady=(10, 0))
-        # self.mercatino_category = ctk.CTkOptionMenu(self.searchview.tab("Mercatino"), width=200, values=list(M_CATEGORIE.keys())) #TODO vincolare al reparto
-        # self.mercatino_category.grid(row=1, column=2, padx=20)
-
-        # self.mercatino_brand_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Marca:", anchor="w", font=("Calibri",17))
-        # self.mercatino_brand_label.grid(row=2, column=0, padx=20, pady=(10, 0))
-        # self.mercatino_brand = ctk.CTkComboBox(self.searchview.tab("Mercatino"), width=200, values=list(M_BRANDS.keys()))
-        # self.mercatino_brand.grid(row=3, column=0, padx=20)
-
-        # self.mercatino_region_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Zona:", anchor="w", font=("Calibri",17))
-        # self.mercatino_region_label.grid(row=2, column=1, padx=20, pady=(10, 0))
-        # self.mercatino_region = ctk.CTkOptionMenu(self.searchview.tab("Mercatino"), width=200,
-        #                                          values=list(M_ZONA.keys()))
-        # self.mercatino_region.grid(row=3, column=1, padx=20)
-
-        # self.mercatino_type_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Tipo annuncio", anchor="w", font=("Calibri",17))
-        # self.mercatino_type_label.grid(row=2, column=2, padx=20, pady=(25, 0))
-        # self.mercatino_type = ctk.CTkOptionMenu(self.searchview.tab("Mercatino"), width=200,
-        #                                      values=list(M_TIPO.keys()))
-        # self.mercatino_type.grid(row=3, column=2, padx=20)      
-
-        # self.mercatino_search_button = ctk.CTkButton(self.searchview.tab("Mercatino"), text="Cerca", font=("Calibri", 20),
-        #                                           command=self.open_mercatino_search_confirmation)
-        # self.mercatino_search_button.grid(row=4, column=2, padx=60, pady=40)
-
         # Lista delle richieste SUBITO
         self.listview = ctk.CTkTabview(self)
         self.listview.grid(row=1, column=1, columnspan=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
@@ -204,6 +117,7 @@ class App(ctk.CTk):
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
 
+        self.load_subito_search()
         self.reload_subito_listing()
         self.load_mercatino_search()
         self.reload_mercatino_listing()
@@ -228,7 +142,6 @@ class App(ctk.CTk):
         richiesta_attiva = richieste[id]['active']
         richieste[id]['active'] = 1 - richiesta_attiva
         save_requests()
-        load_requests()
 
     def add_request(self, params, website, beauty):
         if richieste:
@@ -482,7 +395,7 @@ class App(ctk.CTk):
             self.mercatino_search_confirmation.destroy()
         keyword = self.mercatino_keyword.get()
         reparto = self.mercatino_reparto.get()
-        category = self.mercatino_category.get()
+        category = self.mercatino_category.get()       
         brand = self.mercatino_brand.get()
         region = self.mercatino_region.get()
         tipo = self.mercatino_type.get()
@@ -492,11 +405,13 @@ class App(ctk.CTk):
                 'kw': keyword,
                 'mc': str(M_BRANDS.get(brand)),
                 'rp': str(M_REPARTO.get(reparto)),
-                'ct': str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category)),
+                'ct': str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category, "")),
                 'gp': str(M_TIPO.get(tipo)),
                 '_rgpv': str(M_ZONA.get(region)),
                 'ob': 'data',
             }
+            if category == "Seleziona la categoria":
+                category = "---"
             beauty = {
                 'keyword': keyword,
                 'reparto': reparto,
@@ -509,7 +424,6 @@ class App(ctk.CTk):
             self.reload_mercatino_listing()
         else:
             self.open_wrong_brand(brand)
-
 
     def open_mercatino_search_confirmation(self):
         keyword = self.mercatino_keyword.get()
@@ -550,9 +464,54 @@ class App(ctk.CTk):
                                                         values=[''.join(M_CATEGORIE['0'])])
             self.mercatino_category.grid(row=1, column=2, padx=20)
 
+    def load_subito_search(self):
+            self.subito_keyword_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Cosa cerchi?", anchor="w",
+                                                    font=("Calibri", 17))
+            self.subito_keyword_label.grid(row=0, column=0, padx=20, pady=(10, 0))
+            self.subito_keyword = ctk.CTkEntry(self.searchview.tab("Subito"),
+                                            placeholder_text="Tastiera, Chitarra, Microfono", width=200, height=30)
+            self.subito_keyword.grid(row=1, column=0, padx=20)
+
+            self.subito_category_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="In quale categoria?", anchor="w",
+                                                    font=("Calibri", 17))
+            self.subito_category_label.grid(row=0, column=1, padx=20, pady=(10, 0))
+            self.subito_category = ctk.CTkComboBox(self.searchview.tab("Subito"), width=200,
+                                                values=list(S_CATEGORIE.keys()))
+            self.subito_category.grid(row=1, column=1, padx=20)
+            self.subito_category.bind('<KeyRelease>', self.autocomplete_subito_category)
+
+            self.subito_region_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Dove?", anchor="w",
+                                                    font=("Calibri", 17))
+            self.subito_region_label.grid(row=0, column=2, padx=20, pady=(10, 0))
+            self.subito_region = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
+                                                values=list(S_REGIONI.keys()))
+            self.subito_region.grid(row=1, column=2, padx=20)
+
+            self.subito_shipping_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Spedizione", anchor="w",
+                                                    font=("Calibri", 17))
+            self.subito_shipping_label.grid(row=3, column=0, padx=20, pady=(25, 0))
+            self.subito_shipping = ctk.CTkSwitch(self.searchview.tab("Subito"),
+                                                text="Solo annunci con \nspedizione disponibile")
+            self.subito_shipping.grid(row=4, column=0, padx=20)
+
+            self.subito_titlesearch_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Restringi ricerca",
+                                                        anchor="w", font=("Calibri", 17))
+            self.subito_titlesearch_label.grid(row=3, column=1, padx=20, pady=(25, 0))
+            self.subito_titlesearch = ctk.CTkSwitch(self.searchview.tab("Subito"), text="Cerca solo nel titolo")
+            self.subito_titlesearch.grid(row=4, column=1, padx=20)
+
+            self.subito_type_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Tipo di annuncio", anchor="w",
+                                                font=("Calibri", 17))
+            self.subito_type_label.grid(row=3, column=2, padx=20, pady=(25, 0))
+            self.subito_type = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
+                                                values=list(S_TYPE.keys()))
+            self.subito_type.grid(row=4, column=2, padx=20)
+
+            self.subito_search_button = ctk.CTkButton(self.searchview.tab("Subito"), text="Cerca", font=("Calibri", 20),
+                                                    command=self.open_subito_search_confirmation)
+            self.subito_search_button.grid(row=5, column=2, padx=60, pady=40)
+
     def load_mercatino_search(self):
-        for widget in self.searchview.tab("Mercatino").winfo_children():
-            widget.destroy()
         self.mercatino_keyword_label = ctk.CTkLabel(self.searchview.tab("Mercatino"), text="Cosa cerchi?", anchor="w",
                                                     font=("Calibri", 17))
         self.mercatino_keyword_label.grid(row=0, column=0, padx=20, pady=(10, 0))
@@ -603,8 +562,9 @@ class App(ctk.CTk):
 
         self.searchview.tab("Mercatino").update()
 
-    async def telegram_message(self, message):
-        await bot.send_message(chat_id=chat_id, text=message)
+    def telegram_message(self, message):
+        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
+        requests.get(url)
 
     def make_requests(self):
         while True:
@@ -617,7 +577,6 @@ class App(ctk.CTk):
                         old_products = richieste[req].get("products")
                         for product in j_response['ads']:
                             if product['urn'] not in old_products:
-                                # TODO send_message()
                                 keyword = richieste[req]["beauty"]["keyword"]
                                 category = richieste[req]["beauty"]["category"]
                                 region = richieste[req]["beauty"]["region"]
@@ -627,56 +586,54 @@ class App(ctk.CTk):
                                 url = product["urls"]["mobile"]
                                 if price_elem:
                                     price = price_elem['values'][0]['key']
-                                    message = f'Trovato nuovo prodotto per -{keyword}/{category}- in {region}!\n{title}\n{price}€\n{url}'
+                                    message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
                                 else:
-                                    message = f'Trovato nuovo prodotto per -{keyword}/{category}- in {region}!\n{title}\n{url}'
+                                    message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
                                 print(message)
-                                # self.telegram_message(message)
-                                # bot.send_message(chat_id=chat_id, text=message)
-
+                                self.telegram_message(message)
                                 richieste[req]['products'].append(product['urn'])                        
                     else:
                         response = requests.get(MERCATINO_URL, params=richieste[req]['params'], headers=MERCATINO_HEADERS)
                         soup = bs(response.text, "html.parser")
-                        items_pri = soup.find('div', id='search_list').find_all('div', class_='item pri')
-                        items_pro = soup.find('div', id='search_list').find_all('div', class_='item pro')
-                        items = items_pri + items_pro
-                        old_products = richieste[req].get("products")
-                        for item in items:
-                            ann_div = item.find('div', class_='ann')
-                            inf_div = item.find('div', class_='inf')
-                            if ann_div:
-                                h3_tag = ann_div.find('h3')
-                                if h3_tag:
-                                    a_tag = h3_tag.find('a')
-                                    if a_tag and 'href' in a_tag.attrs:
-                                        href = a_tag.attrs['href']
-                                        match = re.search(MERCATINO_ID_PATTERN, href)
-                                        url = 'https://www.mercatinomusicale.com/' + href
-                                        if match:
-                                            listing_id = match.group(1)
-                                            if listing_id not in old_products:
-                                                # TODO send message
-                                                keyword = richieste[req]["beauty"]["keyword"]
-                                                category = richieste[req]["beauty"]["category"]
-                                                region = richieste[req]["beauty"]["region"]
-                                                reparto = richieste[req]["beauty"]["reparto"]
-                                                brand = richieste[req]["beauty"]["brand"]
-                                                title = h3_tag.text
-                                                if inf_div:
-                                                    prz_span = inf_div.find('span', class_='prz')
-                                                    if prz_span:
-                                                        price = prz_span.text
-                                                        message = f'Trovato nuovo prodotto per -{keyword}/{reparto}/{category}-\nBrand: {brand}\nin {region}!\n{title}\n{price}€\n{url}\n'
-                                                        print(message)
-                                                        richieste[req]['products'].append(listing_id)
-                                        else:
-                                            # TODO probabilmente rimuovere questa parte
-                                            print("This link does't have an id")
+                        try:
+                            items_pri = soup.find('div', id='search_list').find_all('div', class_='item pri')
+                            items_pro = soup.find('div', id='search_list').find_all('div', class_='item pro')
+                            items = items_pri + items_pro
+                            old_products = richieste[req].get("products")
+                            for item in items:
+                                ann_div = item.find('div', class_='ann')
+                                inf_div = item.find('div', class_='inf')
+                                if ann_div:
+                                    h3_tag = ann_div.find('h3')
+                                    if h3_tag:
+                                        a_tag = h3_tag.find('a')
+                                        if a_tag and 'href' in a_tag.attrs:
+                                            href = a_tag.attrs['href']
+                                            match = re.search(MERCATINO_ID_PATTERN, href)
+                                            url = 'https://www.mercatinomusicale.com/' + href
+                                            if match:
+                                                listing_id = match.group(1)
+                                                if listing_id not in old_products:
+                                                    keyword = richieste[req]["beauty"]["keyword"]
+                                                    category = richieste[req]["beauty"]["category"]
+                                                    region = richieste[req]["beauty"]["region"]
+                                                    reparto = richieste[req]["beauty"]["reparto"]
+                                                    brand = richieste[req]["beauty"]["brand"]
+                                                    title = h3_tag.text
+                                                    if inf_div:
+                                                        prz_span = inf_div.find('span', class_='prz')
+                                                        if prz_span:
+                                                            price = prz_span.text
+                                                            message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
+                                                            print(message)
+                                                            self.telegram_message(message)
+                                                            richieste[req]['products'].append(listing_id)
+                                            else:
+                                                print("This link does't have an id")
+                        except:
+                            print("Something went wrong with mercatino")
                     if len(richieste[req]['products']) > 150:
                         richieste[req]['products'] = richieste[req]['products'][30:]
-
-                        # TODO parte di mercatino
             print("Fine richieste")
             time.sleep(30)
 
@@ -686,4 +643,3 @@ if __name__ == "__main__":
     load_requests()
     app = App()
     app.mainloop()
-    save_requests()
