@@ -1,14 +1,15 @@
 {
-    "Tastiere": 1,
-    "Chitarre": 2,
-    "Bassi": 3,
-    "Batterie / Percussioni": 4,
-    "Strumenti a Fiato": 5,
-    "Strumenti a Corda": 6,
-    "Home &amp; Studio Recording": 7,
-    "Live Equipment": 8,
-    "DJ Equipment": 9,
-    "Lighting": 10,
-    "CD / DVD / Didattica": 11,
-    "Merchandising": 14
+    "Tutti i reparti": "",
+    "Tastiere": "1",
+    "Chitarre": "2",
+    "Bassi": "3",
+    "Batterie / Percussioni": "4",
+    "Strumenti a Fiato": "5",
+    "Strumenti a Corda": "6",
+    "Home & Studio Recording": "7",
+    "Live Equipment": "8",
+    "DJ Equipment": "9",
+    "Lighting": "10",
+    "CD / DVD / Didattica": "11",
+    "Merchandising": "14"
 }
