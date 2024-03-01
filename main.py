@@ -179,11 +179,11 @@ class App(ctk.CTk):
         new_req = True
         for req in richieste.keys():
             if richieste[req]['params'] == params and richieste[req]['website'] == website:
-                print("Stai già tracciando lo stesso prodotto")
+                # print("Stai già tracciando lo stesso prodotto")
                 new_req = False
         if new_req:
             richieste[id] = {'params': params, 'website': website, 'active': 1, 'products': [], 'beauty': beauty}
-            print("Richiesta aggiunta")
+            # print("Richiesta aggiunta")
             save_requests()
 
     def open_delete_confirmation(self, id: str):
@@ -230,10 +230,10 @@ class App(ctk.CTk):
         subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0, 0))
 
     def reload_subito_listing(self, id: str = None):
-        print("Dopo check")
+        # print("Dopo check")
         for widget in self.subito_list.winfo_children():
             widget.destroy()
-        print("Dopo reset widgets")
+        # print("Dopo reset widgets")
 
         self.load_subito_listing_headers()
         self.subito_list_switches = []
@@ -289,10 +289,10 @@ class App(ctk.CTk):
         mercatino_listing_type_label.grid(row=0, column=6, padx=10, pady=(0, 0))
 
     def reload_mercatino_listing(self, id: str = None):
-        print("Dopo check")
+        # print("Dopo check")
         for widget in self.mercatino_list.winfo_children():
             widget.destroy()
-        print("Dopo reset widgets")
+        # print("Dopo reset widgets")
 
         self.load_mercatino_listing_headers()
         self.mercatino_list_switches = []
@@ -600,7 +600,7 @@ class App(ctk.CTk):
 
     def make_requests(self):
         while True:
-            print("Inizio richieste")
+            # print("Inizio richieste")
             try:
                 for req in richieste.keys():
                     if richieste[req]['active']:
@@ -623,7 +623,7 @@ class App(ctk.CTk):
                                             message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
                                         else:
                                             message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-                                        print(message)
+                                        # print(message)
                                         richieste[req]['products'].append(product['urn'])                        
                                         self.telegram_message(message)
                             except:
@@ -663,7 +663,7 @@ class App(ctk.CTk):
                                                                 if prz_span:
                                                                     price = prz_span.text
                                                                     message = f'Trovato nuovo prodotto per:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
-                                                                    print(message)
+                                                                    # print(message)
                                                                     richieste[req]['products'].append(listing_id)
                                                                     self.telegram_message(message)
                                 except:
@@ -676,7 +676,7 @@ class App(ctk.CTk):
                             richieste[req]['products'] = richieste[req]['products'][30:]
             except:
                 self.load_threading()
-            print("Fine richieste")
+            # print("Fine richieste")
             time.sleep(30)
 
 
