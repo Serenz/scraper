@@ -154,9 +154,9 @@ class App(ctk.CTk):
         else:
             with open(file_path, "r") as f:
                 CHAT_ID = f.readline()
-            self.chat_id_label = ctk.CTkLabel(self.sidebar_frame, text=f"CHAT_ID: {CHAT_ID}",
-                                       font=ctk.CTkFont(size=20, weight="bold"))
-            self.chat_id_label.grid(row=1, column=0, padx=20, pady=(20, 10))
+        self.chat_id_label = ctk.CTkLabel(self.sidebar_frame, text=f"CHAT_ID: {CHAT_ID}",
+                                    font=ctk.CTkFont(size=20, weight="bold"))
+        self.chat_id_label.grid(row=1, column=0, padx=20, pady=(20, 10))
         self.load_all()
 
     def change_appearance_mode_event(self, new_appearance_mode: str):
