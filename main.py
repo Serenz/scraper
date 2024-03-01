@@ -17,8 +17,8 @@ from utils.my_token import TOKEN, DEV_ID
 def load_mappings():
     global M_BRANDS, M_CATEGORIE, M_ORDINE, M_REPARTO, M_TIPO, M_ZONA, S_CATEGORIE, S_REGIONI, S_TYPE
     current = Path(os.getcwd())
-    mercatino = current / "mercatino_mapping"
-    subito = current / "subito_mapping"
+    mercatino = current / "scraper" / "mercatino_mapping"
+    subito = current / "scraper" / "subito_mapping"
     with open(mercatino / "brands_mapping_mc.json", 'r') as f:
         M_BRANDS = json.load(f)
     with open(mercatino  / "categorie_mapping_ct.json", "r") as f:
@@ -47,12 +47,12 @@ def load_mappings():
 
 def load_requests():
     global richieste
-    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+    req_path = Path(os.getcwd()) / "scraper" / "utils" / "richieste.json"
     with open(req_path, "r") as f:
         richieste = json.load(f)
 
 def save_requests():
-    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+    req_path = Path(os.getcwd()) / "scraper" / "utils" / "richieste.json"
     with open(req_path, "w") as f:
         json.dump(richieste, f, indent=4)
 
@@ -144,7 +144,7 @@ class App(ctk.CTk):
     def load_chat_id(self):
         global CHAT_ID
         CHAT_ID = None
-        file_path = Path(os.getcwd()) / "utils" / "chat_id.txt"
+        file_path = Path(os.getcwd()) / "scraper" / "utils" / "chat_id.txt"
         if not os.path.exists(file_path):
             while CHAT_ID == None:
                 CHAT_ID = self.open_chat_id_event()
