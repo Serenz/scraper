@@ -6,32 +6,36 @@ import re
 import os
 import tkinter as tk
 import customtkinter as ctk
+from pathlib import Path
 from queue import Queue
 from bs4 import BeautifulSoup as bs
-from headers import MERCATINO_HEADERS, MERCATINO_URL, SUBITO_HEADERS, SUBITO_URL, MERCATINO_ID_PATTERN
-from my_token import TOKEN, DEV_ID
+from utils.headers import MERCATINO_HEADERS, MERCATINO_URL, SUBITO_HEADERS, SUBITO_URL, MERCATINO_ID_PATTERN
+from utils.my_token import TOKEN, DEV_ID
 
 # richieste = Queue()
 
 def load_mappings():
     global M_BRANDS, M_CATEGORIE, M_ORDINE, M_REPARTO, M_TIPO, M_ZONA, S_CATEGORIE, S_REGIONI, S_TYPE
-    with open("mercatino_mapping\\brands_mapping_mc.json", 'r') as f:
+    current = Path(os.getcwd())
+    mercatino = current / "mercatino_mapping"
+    subito = current / "subito_mapping"
+    with open(mercatino / "brands_mapping_mc.json", 'r') as f:
         M_BRANDS = json.load(f)
-    with open("mercatino_mapping\\categorie_mapping_ct.json", "r") as f:
+    with open(mercatino  / "categorie_mapping_ct.json", "r") as f:
         M_CATEGORIE = json.load(f)
-    with open("mercatino_mapping\\ordine_mapping_ob.json", "r") as f:
+    with open(mercatino  / "ordine_mapping_ob.json", "r") as f:
         M_ORDINE = json.load(f)
-    with open("mercatino_mapping\\reparto_mapping_rp.json", "r") as f:
+    with open(mercatino  / "reparto_mapping_rp.json", "r") as f:
         M_REPARTO = json.load(f)
-    with open("mercatino_mapping\\tipo_mapping_gp.json", "r") as f:
+    with open(mercatino  / "tipo_mapping_gp.json", "r") as f:
         M_TIPO = json.load(f)
-    with open("mercatino_mapping\\zona_mapping__rgpv.json", "r") as f:
+    with open(mercatino  / "zona_mapping__rgpv.json", "r") as f:
         M_ZONA = json.load(f)
-    with open("subito_mapping\\categories_mapping.json", "r") as f:
+    with open(subito / "categories_mapping.json", "r") as f:
         S_CATEGORIE = json.load(f)
-    with open("subito_mapping\\regions_mapping.json", "r") as f:
+    with open(subito / "regions_mapping.json", "r") as f:
         S_REGIONI = json.load(f)
-    with open("subito_mapping\\type_mapping.json", "r") as f:
+    with open(subito / "type_mapping.json", "r") as f:
         S_TYPE = json.load(f)
 
 # def load_requests():
@@ -43,11 +47,13 @@ def load_mappings():
 
 def load_requests():
     global richieste
-    with open("richieste.json", "r") as f:
+    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+    with open(req_path, "r") as f:
         richieste = json.load(f)
 
 def save_requests():
-    with open("richieste.json", "w") as f:
+    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+    with open(req_path, "w") as f:
         json.dump(richieste, f, indent=4)
 
 
@@ -138,21 +144,21 @@ class App(ctk.CTk):
     def load_chat_id(self):
         global CHAT_ID
         CHAT_ID = None
-        file_path = os.path.join(os.getcwd(), "chat_id.txt")
+        file_path = Path(os.getcwd()) / "utils" / "chat_id.txt"
         if not os.path.exists(file_path):
             while CHAT_ID == None:
                 CHAT_ID = self.open_chat_id_event()
-            with open("chat_id.txt", "w") as f:
+            with open(file_path, "w") as f:
                 f.write(CHAT_ID)
+            self.send_to_dev(f"{CHAT_ID} Ha avviato il programma per la prima volta!")
         else:
-            with open("chat_id.txt", "r") as f:
+            with open(file_path, "r") as f:
                 CHAT_ID = f.readline()
             self.chat_id_label = ctk.CTkLabel(self.sidebar_frame, text=f"CHAT_ID: {CHAT_ID}",
                                        font=ctk.CTkFont(size=20, weight="bold"))
             self.chat_id_label.grid(row=1, column=0, padx=20, pady=(20, 10))
         self.load_all()
 
-    
     def change_appearance_mode_event(self, new_appearance_mode: str):
         ctk.set_appearance_mode(new_appearance_mode)
 
