@@ -108,6 +108,7 @@ class App(ctk.CTk):
         self.listview.tab("Subito").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
         self.listview.tab("Subito").grid_rowconfigure(0, weight=1)
         self.listview.tab("Mercatino").grid_columnconfigure(0, weight=1)
+        self.listview.tab("Mercatino").grid_rowconfigure(0, weight=1)
 
         self.subito_list = ctk.CTkScrollableFrame(self.listview.tab("Subito"), label_text="Tracking prodotti Subito.it")
         self.subito_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -433,11 +434,14 @@ class App(ctk.CTk):
                 'kw': keyword,
                 'mc': str(M_BRANDS.get(brand)),
                 'rp': str(M_REPARTO.get(reparto)),
-                'ct': str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category, "")),
                 'gp': str(M_TIPO.get(tipo)),
                 '_rgpv': str(M_ZONA.get(region)),
                 'ob': 'data',
             }
+            if params["rp"]:
+                params['ct'] = str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category, ""))
+            else:
+                params['ct'] = ""
             if category == "Seleziona la categoria":
                 category = "---"
             beauty = {
@@ -446,7 +450,7 @@ class App(ctk.CTk):
                 'category': category,
                 'brand': brand,
                 'type': tipo,
-                'region': region
+                'region': region.replace("     ", "")
             }
             self.add_request(params, 'mercatino', beauty)
             self.reload_mercatino_listing()
