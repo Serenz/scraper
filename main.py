@@ -433,11 +433,14 @@ class App(ctk.CTk):
                 'kw': keyword,
                 'mc': str(M_BRANDS.get(brand)),
                 'rp': str(M_REPARTO.get(reparto)),
-                'ct': str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category, "")),
                 'gp': str(M_TIPO.get(tipo)),
                 '_rgpv': str(M_ZONA.get(region)),
                 'ob': 'data',
             }
+            if params["rp"]:
+                params['ct'] = str(M_CATEGORIE.get(M_REPARTO.get(reparto)).get(category, ""))
+            else:
+                params['ct'] = ""
             if category == "Seleziona la categoria":
                 category = "---"
             beauty = {
@@ -446,7 +449,7 @@ class App(ctk.CTk):
                 'category': category,
                 'brand': brand,
                 'type': tipo,
-                'region': region
+                'region': region.replace("     ", "")
             }
             self.add_request(params, 'mercatino', beauty)
             self.reload_mercatino_listing()
