@@ -125,11 +125,20 @@ class App(ctk.CTk):
 
         self.load_chat_id()
         
+    def load_subito_threading(self):
+        self.subito_thread = threading.Thread(target=self.make_subito_requests)
+        self.subito_thread.daemon = True
+        self.subito_thread.start()
 
+
+    def load_mercatino_threading(self):
+        self.mercatino_thread = threading.Thread(target=self.make_mercatino_requests)
+        self.mercatino_thread.daemon = True
+        self.mercatino_thread.start()
+    
     def load_threading(self):
-        self.thread = threading.Thread(target=self.make_requests)
-        self.thread.daemon = True
-        self.thread.start()
+        self.load_subito_threading()
+        self.load_mercatino_threading()
 
     def load_all(self):
         self.load_subito_search()
@@ -601,80 +610,78 @@ class App(ctk.CTk):
     def send_to_dev(self, message):
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={DEV_ID}&text={message}"
         requests.get(url)
-
-    # def make_requests(self):
-    #     while True:
-    #         print("Inizio richieste")
-    #         try:
-    #             for req in richieste.keys():
-    #                 if richieste[req]['active']:
-    #                     if richieste[req]['website'] == 'subito':
-    #                         try:
-    #                             response = requests.get(SUBITO_URL, params=richieste[req]['params'], headers=SUBITO_HEADERS)
-    #                             j_response = response.json()
-    #                             old_products = richieste[req].get("products")
-    #                             for product in j_response['ads']:
-    #                                 if product['urn'] not in old_products:
-    #                                     keyword = richieste[req]["beauty"]["keyword"]
-    #                                     category = richieste[req]["beauty"]["category"]
-    #                                     region = richieste[req]["beauty"]["region"]
-    #                                     title = product['subject']
-    #                                     price_elem = next(
-    #                                         (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
-    #                                     url = product["urls"]["mobile"]
-    #                                     if price_elem:
-    #                                         price = price_elem['values'][0]['key']
-    #                                         message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
-    #                                     else:
-    #                                         message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-    #                                     print(message)
-    #                                     richieste[req]['products'].append(product['urn'])                        
-    #                                     self.telegram_message(message)
-    #                         except:
-    #                             self.send_to_dev("Something went wrong in Subito Request!")
-    #                             self.load_threading()
-    #                     else:
-    #                         try:
-    #                             response = requests.get(MERCATINO_URL, params=richieste[req]['params'], headers=MERCATINO_HEADERS)
-    #                             print(response)
-    #                             soup = bs(response.text, "html.parser")
-    #                             try:
-    #                                 items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
-    #                                 old_products = richieste[req].get("products")
-    #                                 for item in items:
-    #                                     link = item.find('a', class_='box_prod_link')
-    #                                     href = link.attrs['href']
-    #                                     match = re.search(MERCATINO_ID_PATTERN, href)
-    #                                     url = 'https://www.mercatinomusicale.com' + href
-    #                                     listing_id = match.group(1)
-    #                                     if listing_id not in old_products:
-    #                                         keyword = richieste[req]["beauty"]["keyword"]
-    #                                         category = richieste[req]["beauty"]["category"]
-    #                                         region = richieste[req]["beauty"]["region"]
-    #                                         reparto = richieste[req]["beauty"]["reparto"]
-    #                                         brand = richieste[req]["beauty"]["brand"]
-    #                                         title_span = item.find('span', class_='tit')
-    #                                         title = title_span.text
-    #                                         opt_span = item.find('span', class_='prz')
-    #                                         price = opt_span.text
-    #                                         message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
-    #                                         print(message)
-    #                                         richieste[req]['products'].append(listing_id)
-    #                                         self.telegram_message(message)
-    #                             except:
-    #                                 self.send_to_dev("Something wrong with Mercatino parsing! Probably the website changed!")
-    #                                 # self.load_threading()
-    #                         except:
-    #                             self.send_to_dev("Something went wrong in Mercatino Request!")
-    #                             # self.load_threading()
-    #                     if len(richieste[req]['products']) > 2500:
-    #                         richieste[req]['products'] = richieste[req]['products'][30:]
-    #         except:
-    #             self.send_to_dev("Something went wrong with make_requests!")
-    #             self.load_threading()
-    #         print("Fine richieste")
-    #         time.sleep(30)
         
+    def make_subito_requests(self):
+        while True:
+            print("Inizio richieste Subito")
+            for req in richieste.keys():
+                if richieste[req]['active']:
+                    if richieste[req]['website'] == 'subito':
+                        response = requests.get(SUBITO_URL, params=richieste[req]['params'], headers=SUBITO_HEADERS)
+                        j_response = response.json()
+                        old_products = richieste[req].get("products")
+                        for product in j_response['ads']:
+                            if product['urn'] not in old_products:
+                                keyword = richieste[req]["beauty"]["keyword"]
+                                category = richieste[req]["beauty"]["category"]
+                                region = richieste[req]["beauty"]["region"]
+                                title = product['subject']
+                                price_elem = next(
+                                    (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
+                                url = product["urls"]["mobile"]
+                                if price_elem:
+                                    price = price_elem['values'][0]['key']
+                                    message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
+                                else:
+                                    message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
+                                print(message)
+                                richieste[req]['products'].append(product['urn'])                        
+                                self.telegram_message(message)
+                    if len(richieste[req]['products']) > 2500:
+                        richieste[req]['products'] = richieste[req]['products'][30:]
+            time.sleep(30)
+
+    def make_mercatino_requests(self):
+        while True:
+            print("Inizio richieste Mercatino")
+            for req in richieste.keys():
+                if richieste[req]['active']:
+                    if richieste[req]['website'] == 'mercatino':
+                        try:
+                            response = requests.get(MERCATINO_URL, params=richieste[req]['params'], headers=MERCATINO_HEADERS)
+                            # print(response)
+                            with open('response.txt', 'w') as f:
+                                f.writelines(response.text)
+                            soup = bs(response.text, "html.parser")
+                            items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
+                            old_products = richieste[req].get("products")
+                            for item in items:
+                                link = item.find('a', class_='box_prod_link')
+                                href = link.attrs['href']
+                                match = re.search(MERCATINO_ID_PATTERN, href)
+                                url = 'https://www.mercatinomusicale.com' + href
+                                listing_id = match.group(1)
+                                if listing_id not in old_products:
+                                    keyword = richieste[req]["beauty"]["keyword"]
+                                    category = richieste[req]["beauty"]["category"]
+                                    region = richieste[req]["beauty"]["region"]
+                                    reparto = richieste[req]["beauty"]["reparto"]
+                                    brand = richieste[req]["beauty"]["brand"]
+                                    title_span = item.find('span', class_='tit')
+                                    title = title_span.text
+                                    opt_span = item.find('span', class_='prz')
+                                    price = opt_span.text
+                                    message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
+                                    print(message)
+                                    richieste[req]['products'].append(listing_id)
+                                    self.telegram_message(message)  
+                        except:
+                            self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
+                    if len(richieste[req]['products']) > 2500:
+                        richieste[req]['products'] = richieste[req]['products'][30:]
+                    time.sleep(15)
+
+    # TODO remove this
     def make_requests(self):
         while True:
             print("Inizio richieste")
