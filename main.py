@@ -179,11 +179,11 @@ class App(ctk.CTk):
         new_req = True
         for req in richieste.keys():
             if richieste[req]['params'] == params and richieste[req]['website'] == website:
-                print("Stai già tracciando lo stesso prodotto")
+                # print("Stai già tracciando lo stesso prodotto")
                 new_req = False
         if new_req:
             richieste[id] = {'params': params, 'website': website, 'active': 1, 'products': [], 'beauty': beauty}
-            print("Richiesta aggiunta")
+            # print("Richiesta aggiunta")
             save_requests()
 
     def open_delete_confirmation(self, id: str):
@@ -230,10 +230,10 @@ class App(ctk.CTk):
         subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0, 0))
 
     def reload_subito_listing(self, id: str = None):
-        print("Dopo check")
+        # print("Dopo check")
         for widget in self.subito_list.winfo_children():
             widget.destroy()
-        print("Dopo reset widgets")
+        # print("Dopo reset widgets")
 
         self.load_subito_listing_headers()
         self.subito_list_switches = []
@@ -289,10 +289,10 @@ class App(ctk.CTk):
         mercatino_listing_type_label.grid(row=0, column=6, padx=10, pady=(0, 0))
 
     def reload_mercatino_listing(self, id: str = None):
-        print("Dopo check")
+        # print("Dopo check")
         for widget in self.mercatino_list.winfo_children():
             widget.destroy()
-        print("Dopo reset widgets")
+        # print("Dopo reset widgets")
 
         self.load_mercatino_listing_headers()
         self.mercatino_list_switches = []
@@ -603,7 +603,7 @@ class App(ctk.CTk):
         
     def make_subito_requests(self):
         while True:
-            print("Inizio richieste Subito")
+            # print("Inizio richieste Subito")
             attuale = copy.deepcopy(richieste)
             for req in attuale.keys():
                 #TODO rendere indipindente dalle variazioni di "richieste"
@@ -626,27 +626,24 @@ class App(ctk.CTk):
                                     message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
                                 else:
                                     message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-                                print(message)
+                                # print(message)
                                 attuale[req]['products'].append(product['urn'])                        
                                 self.telegram_message(message)
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
             [richieste[req].update({'products': attuale[req]['products']}) for req in richieste.keys() if req in attuale]
-            print("Fine richieste Subito")
+            # print("Fine richieste Subito")
             time.sleep(30)
 
     def make_mercatino_requests(self):
         while True:
-            print("Inizio richieste Mercatino")
+            # print("Inizio richieste Mercatino")
             attuale = copy.deepcopy(richieste)
             for req in attuale.keys():
                 if attuale[req]['active']:
                     if attuale[req]['website'] == 'mercatino':
                         try:
                             response = requests.get(MERCATINO_URL, params=attuale[req]['params'], headers=MERCATINO_HEADERS)
-                            # print(response)
-                            with open('response.txt', 'w') as f:
-                                f.writelines(response.text)
                             soup = bs(response.text, "html.parser")
                             items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
                             old_products = attuale[req].get("products", [])
@@ -667,15 +664,15 @@ class App(ctk.CTk):
                                     opt_span = item.find('span', class_='prz')
                                     price = opt_span.text
                                     message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
-                                    print(message)
+                                    # print(message)
                                     attuale[req]['products'].append(listing_id)
                                     self.telegram_message(message)  
                         except:
                             self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
-                    time.sleep(15)
-            print("Fine richieste Mercatino")
+                    time.sleep(30)
+            # print("Fine richieste Mercatino")
             [richieste[req].update({'products': attuale[req]['products']}) for req in richieste.keys() if req in attuale]
 
 

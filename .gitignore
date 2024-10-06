@@ -1,2 +1,4 @@
 my_token.py
 chat_id.txt
+__pycache__
+richieste.json
