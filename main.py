@@ -37,16 +37,35 @@ def load_mappings():
     with open(subito / "type_mapping.json", "r") as f:
         S_TYPE = json.load(f)
 
-def load_requests():
-    global richieste
-    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+def load_mercatino_requests():
+    global richieste_mercatino
+    req_path = Path(os.getcwd()) / "utils" / "richieste_mercatino.json"
     with open(req_path, "r") as f:
-        richieste = json.load(f)
+        richieste_mercatino = json.load(f)
 
-def save_requests():
-    req_path = Path(os.getcwd()) / "utils" / "richieste.json"
+def load_subito_requests():
+    global richieste_subito
+    req_path = Path(os.getcwd()) / "utils" / "richieste_subito.json"
+    with open(req_path, "r") as f:
+        richieste_subito = json.load(f)
+
+def load_requests():
+    load_subito_requests()
+    load_mercatino_requests()
+
+def save_subito_requests():
+    req_path = Path(os.getcwd()) / "utils" / "richieste_subito.json"
     with open(req_path, "w") as f:
-        json.dump(richieste, f, indent=4)
+        json.dump(richieste_subito, f, indent=4)
+
+def save_mercatino_requests():
+    req_path = Path(os.getcwd()) / "utils" / "richieste_mercatino.json"
+    with open(req_path, "w") as f:
+        json.dump(richieste_mercatino, f, indent=4)
+
+def save_all():
+    save_subito_requests()
+    save_mercatino_requests()
 
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -166,27 +185,41 @@ class App(ctk.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         ctk.set_widget_scaling(new_scaling_float)
 
-    def toggle_request_track(self, id: str):
-        richiesta_attiva = richieste[id]['active']
-        richieste[id]['active'] = 1 - richiesta_attiva
-        save_requests()
+    def toggle_request_track(self, id: str, website: str):
+        if website == "subito":
+            active = richieste_subito[id]["active"]
+            richieste_subito[id]["active"] = 1 - active
+            save_subito_requests()
+        else:
+            active = richieste_mercatino[id]["active"]
+            richieste_mercatino[id]["active"] = 1 - active
+            save_mercatino_requests()
 
-    def add_request(self, params, website, beauty):
-        if richieste:
-            id = str(max((int(x) for x in richieste.keys())) + 1)
+    def check_new(self, richieste, params):
+        for req in richieste.keys():
+            if richieste[req]['params'] == params:
+                return False
+        return True
+
+    def add_subito_request(self, params, beauty):
+        if richieste_subito:
+            id = str(max((int(x) for x in richieste_subito.keys())) + 1)
         else:
             id = str(0)
-        new_req = True
-        for req in richieste.keys():
-            if richieste[req]['params'] == params and richieste[req]['website'] == website:
-                # print("Stai già tracciando lo stesso prodotto")
-                new_req = False
-        if new_req:
-            richieste[id] = {'params': params, 'website': website, 'active': 1, 'products': [], 'beauty': beauty}
-            # print("Richiesta aggiunta")
-            save_requests()
+        if self.check_new(richieste_subito, params):
+            richieste_subito[id] = {'params': params, 'active': 1, 'products': [], 'beauty': beauty}
+            save_subito_requests()
 
-    def open_delete_confirmation(self, id: str):
+    def add_mercatino_request(self, params, beauty):
+        if richieste_mercatino:
+            id = str(max((int(x) for x in richieste_mercatino.keys())) + 1)
+        else:
+            id = str(0)
+        if self.check_new(richieste_mercatino, params):
+            richieste_mercatino[id] = {'params': params, 'active': 1, 'products': [], 'beauty': beauty}
+            save_mercatino_requests()
+
+    def open_delete_confirmation(self, id: str, website: str):
         self.delete_confirmation = ctk.CTkToplevel()
         self.delete_confirmation.title("Conferma eliminazione")
         confirmation_label = ctk.CTkLabel(self.delete_confirmation,
@@ -195,7 +228,7 @@ class App(ctk.CTk):
         confirmation_label.grid(row=0, column=0, columnspan=2, padx=(20, 20), pady=(20, 20))
         confirm_button = ctk.CTkButton(self.delete_confirmation, text="CONFERMA", fg_color="red", anchor="center",
                                        font=("Calibri", 15), width=100)
-        confirm_button.configure(command=lambda id=id: self.delete_request_track(id))
+        confirm_button.configure(command=lambda id=id, website=website: self.delete_request_track(id, website))
         confirm_button.grid(row=1, column=0, padx=(20, 20), pady=(10, 20))
         abort_button = ctk.CTkButton(self.delete_confirmation, text="ANNULLA", anchor="center", font=("Calibri", 15),
                                      width=100)
@@ -203,15 +236,14 @@ class App(ctk.CTk):
         abort_button.grid(row=1, column=1, padx=(20, 20), pady=(10, 20))
         self.delete_confirmation.focus_force()
 
-    def delete_request_track(self, id: str):
-        website = richieste[id]["website"]
-        del richieste[id]
-        self.delete_confirmation.destroy()
-        save_requests()
-        if website == 'subito':
+    def delete_request_track(self, id: str, website: str):
+        if website == "subito":
+            del richieste_subito[id]
             self.reload_subito_listing()
         else:
+            del richieste_mercatino[id]
             self.reload_mercatino_listing()
+        self.delete_confirmation.destroy()
 
     def load_subito_listing_headers(self):
         subito_listing_active_label = ctk.CTkLabel(self.subito_list, text="ON/OFF", anchor="center",
@@ -230,39 +262,37 @@ class App(ctk.CTk):
         subito_listing_type_label.grid(row=0, column=4, padx=10, pady=(0, 0))
 
     def reload_subito_listing(self, id: str = None):
-        # print("Dopo check")
         for widget in self.subito_list.winfo_children():
             widget.destroy()
-        # print("Dopo reset widgets")
 
         self.load_subito_listing_headers()
         self.subito_list_switches = []
-        for id in (req for req in richieste.keys() if richieste[req]['website'] == 'subito'):
+        for id in richieste_subito.keys():
             subito_header_separator = tk.ttk.Separator(self.subito_list, orient="horizontal")
             subito_header_separator.grid(row=len(self.subito_list_switches) + 1, column=0, columnspan=6, padx=(20, 20),
                                          pady=(30, 10), sticky="ew")
 
-            switch_var = ctk.IntVar(value=richieste[id]['active'])
+            switch_var = ctk.IntVar(value=richieste_subito[id]['active'])
             switch = ctk.CTkSwitch(master=self.subito_list, variable=switch_var, text="")
             switch.grid(row=len(self.subito_list_switches) + 2, column=0, padx=(60, 0), pady=(0, 20), sticky='ns')
-            switch.configure(command=lambda id=id: self.toggle_request_track(id))
+            switch.configure(command=lambda id=id: self.toggle_request_track(id, website="subito"))
             self.subito_list_switches.append((switch, id))
 
-            keyword = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['keyword'], anchor="center",
+            keyword = ctk.CTkLabel(self.subito_list, text=richieste_subito[id]['beauty']['keyword'], anchor="center",
                                    font=("Calibri", 15))
             keyword.grid(row=len(self.subito_list_switches) + 1, column=1, padx=10, pady=(0, 20), sticky='ns')
-            category = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['category'], anchor="center",
+            category = ctk.CTkLabel(self.subito_list, text=richieste_subito[id]['beauty']['category'], anchor="center",
                                     font=("Calibri", 15))
             category.grid(row=len(self.subito_list_switches) + 1, column=2, padx=10, pady=(0, 20), sticky='ns')
-            region = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['region'], anchor="center",
+            region = ctk.CTkLabel(self.subito_list, text=richieste_subito[id]['beauty']['region'], anchor="center",
                                   font=("Calibri", 15))
             region.grid(row=len(self.subito_list_switches) + 1, column=3, padx=10, pady=(0, 20), sticky='ns')
-            tipo = ctk.CTkLabel(self.subito_list, text=richieste[id]['beauty']['type'], anchor="center",
+            tipo = ctk.CTkLabel(self.subito_list, text=richieste_subito[id]['beauty']['type'], anchor="center",
                                 font=("Calibri", 15))
             tipo.grid(row=len(self.subito_list_switches) + 1, column=4, padx=10, pady=(0, 20), sticky='ns')
             delete = ctk.CTkButton(self.subito_list, text="ELIMINA", anchor="center", font=("Calibri", 20),
                                    fg_color="red", width=85)
-            delete.configure(command=lambda id=id: self.open_delete_confirmation(id))
+            delete.configure(command=lambda id=id: self.open_delete_confirmation(id, website="subito"))
             delete.grid(row=len(self.subito_list_switches) + 1, column=5, padx=10, pady=(0, 20), sticky='ns')
         self.subito_list.update()
 
@@ -289,45 +319,43 @@ class App(ctk.CTk):
         mercatino_listing_type_label.grid(row=0, column=6, padx=10, pady=(0, 0))
 
     def reload_mercatino_listing(self, id: str = None):
-        # print("Dopo check")
         for widget in self.mercatino_list.winfo_children():
             widget.destroy()
-        # print("Dopo reset widgets")
 
         self.load_mercatino_listing_headers()
         self.mercatino_list_switches = []
-        for id in (req for req in richieste.keys() if richieste[req]['website'] == 'mercatino'):
+        for id in richieste_mercatino.keys():
             mercatino_header_separator = tk.ttk.Separator(self.mercatino_list, orient="horizontal")
             mercatino_header_separator.grid(row=len(self.mercatino_list_switches) + 1, column=0, columnspan=8, padx=(20, 20),
                                          pady=(30, 10), sticky="ew")
 
-            switch_var = ctk.IntVar(value=richieste[id]['active'])
+            switch_var = ctk.IntVar(value=richieste_mercatino[id]['active'])
             switch = ctk.CTkSwitch(master=self.mercatino_list, variable=switch_var, text="")
             switch.grid(row=len(self.mercatino_list_switches) + 2, column=0, padx=(60, 0), pady=(0, 20), sticky='ns')
-            switch.configure(command=lambda id=id: self.toggle_request_track(id))
+            switch.configure(command=lambda id=id: self.toggle_request_track(id, website="mercatino"))
             self.mercatino_list_switches.append((switch, id))
 
-            keyword = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['keyword'], anchor="center",
+            keyword = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['keyword'], anchor="center",
                                    font=("Calibri", 15))
             keyword.grid(row=len(self.mercatino_list_switches) + 1, column=1, padx=10, pady=(0, 20), sticky='ns')
-            brand = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['brand'], anchor="center",
+            brand = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['brand'], anchor="center",
                                     font=("Calibri", 15))
             brand.grid(row=len(self.mercatino_list_switches) + 1, column=2, padx=10, pady=(0, 20), sticky='ns')
-            reparto = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['reparto'], anchor="center",
+            reparto = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['reparto'], anchor="center",
                                   font=("Calibri", 15))
             reparto.grid(row=len(self.mercatino_list_switches) + 1, column=3, padx=10, pady=(0, 20), sticky='ns')
-            category = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['category'], anchor="center",
+            category = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['category'], anchor="center",
                                 font=("Calibri", 15))
             category.grid(row=len(self.mercatino_list_switches) + 1, column=4, padx=10, pady=(0, 20), sticky='ns')
-            region = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['region'], anchor="center",
+            region = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['region'], anchor="center",
                                 font=("Calibri", 15))
             region.grid(row=len(self.mercatino_list_switches) + 1, column=5, padx=10, pady=(0, 20), sticky='ns')
-            tipo = ctk.CTkLabel(self.mercatino_list, text=richieste[id]['beauty']['type'], anchor="center",
+            tipo = ctk.CTkLabel(self.mercatino_list, text=richieste_mercatino[id]['beauty']['type'], anchor="center",
                                 font=("Calibri", 15))
             tipo.grid(row=len(self.mercatino_list_switches) + 1, column=6, padx=10, pady=(0, 20), sticky='ns')
             delete = ctk.CTkButton(self.mercatino_list, text="ELIMINA", anchor="center", font=("Calibri", 20),
                                    fg_color="red", width=85)
-            delete.configure(command=lambda id=id: self.open_delete_confirmation(id))
+            delete.configure(command=lambda id=id: self.open_delete_confirmation(id, website="mercatino"))
             delete.grid(row=len(self.mercatino_list_switches) + 1, column=7, padx=10, pady=(0, 20), sticky='ns')
         self.mercatino_list.update()
 
@@ -413,8 +441,9 @@ class App(ctk.CTk):
                 'type': tipo,
                 'region': region
             }
-            self.add_request(params, 'subito', beauty)
+            self.add_subito_request(params, beauty)
             self.reload_subito_listing()
+            self.subito_keyword.delete(0, "end")
         else:
             self.open_wrong_category(category)
 
@@ -451,8 +480,9 @@ class App(ctk.CTk):
                 'type': tipo,
                 'region': region.replace("     ", "")
             }
-            self.add_request(params, 'mercatino', beauty)
+            self.add_mercatino_request(params, beauty)
             self.reload_mercatino_listing()
+            self.mercatino_keyword.delete(0, "end")
         else:
             self.open_wrong_brand(brand)
 
@@ -603,77 +633,72 @@ class App(ctk.CTk):
         
     def make_subito_requests(self):
         while True:
-            # print("Inizio richieste Subito")
-            attuale = copy.deepcopy(richieste)
+            attuale = copy.deepcopy(richieste_subito)
             for req in attuale.keys():
-                #TODO rendere indipindente dalle variazioni di "richieste"
                 if attuale[req]['active']:
-                    if attuale[req]['website'] == 'subito':
-                        response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
-                        j_response = response.json()
-                        old_products = attuale[req].get("products", [])
-                        for product in j_response['ads']:
-                            if product['urn'] not in old_products:
-                                keyword = attuale[req]["beauty"]["keyword"]
-                                category = attuale[req]["beauty"]["category"]
-                                region = attuale[req]["beauty"]["region"]
-                                title = product['subject']
-                                price_elem = next(
-                                    (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
-                                url = product["urls"]["mobile"]
-                                if price_elem:
-                                    price = price_elem['values'][0]['key']
-                                    message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
-                                else:
-                                    message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-                                # print(message)
-                                attuale[req]['products'].append(product['urn'])                        
-                                self.telegram_message(message)
+                    response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
+                    j_response = response.json()
+                    old_products = attuale[req].get("products", [])
+                    for product in j_response['ads']:
+                        if product['urn'] not in old_products:
+                            keyword = attuale[req]["beauty"]["keyword"]
+                            category = attuale[req]["beauty"]["category"]
+                            region = attuale[req]["beauty"]["region"]
+                            title = product['subject']
+                            price_elem = next(
+                                (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
+                            url = product["urls"]["mobile"]
+                            if price_elem:
+                                price = price_elem['values'][0]['key']
+                                message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
+                            else:
+                                message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
+                            attuale[req]['products'].append(product['urn'])                        
+                            self.telegram_message(message)
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
-            [richieste[req].update({'products': attuale[req]['products']}) for req in richieste.keys() if req in attuale]
-            # print("Fine richieste Subito")
+            [richieste_subito[req].update({'products': attuale[req]['products']}) for req in richieste_subito.keys() if req in attuale.keys()]
             time.sleep(30)
 
     def make_mercatino_requests(self):
         while True:
-            # print("Inizio richieste Mercatino")
-            attuale = copy.deepcopy(richieste)
+            attuale = copy.deepcopy(richieste_mercatino)
             for req in attuale.keys():
                 if attuale[req]['active']:
-                    if attuale[req]['website'] == 'mercatino':
-                        try:
-                            response = requests.get(MERCATINO_URL, params=attuale[req]['params'], headers=MERCATINO_HEADERS)
-                            soup = bs(response.text, "html.parser")
-                            items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
-                            old_products = attuale[req].get("products", [])
-                            for item in items:
-                                link = item.find('a', class_='box_prod_link')
-                                href = link.attrs['href']
-                                match = re.search(MERCATINO_ID_PATTERN, href)
-                                url = 'https://www.mercatinomusicale.com' + href
-                                listing_id = match.group(1)
-                                if listing_id not in old_products:
-                                    keyword = attuale[req]["beauty"]["keyword"]
-                                    category = attuale[req]["beauty"]["category"]
-                                    region = attuale[req]["beauty"]["region"]
-                                    reparto = attuale[req]["beauty"]["reparto"]
-                                    brand = attuale[req]["beauty"]["brand"]
-                                    title_span = item.find('span', class_='tit')
-                                    title = title_span.text
-                                    opt_span = item.find('span', class_='prz')
-                                    price = opt_span.text
-                                    message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
-                                    # print(message)
-                                    attuale[req]['products'].append(listing_id)
-                                    self.telegram_message(message)  
-                        except:
-                            self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
+                    try:
+                        response = requests.get(MERCATINO_URL, params=attuale[req]['params'], headers=MERCATINO_HEADERS)
+                        soup = bs(response.text, "html.parser")
+                        items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
+                        old_products = attuale[req].get("products", [])
+                        for item in items:
+                            link = item.find('a', class_='box_prod_link')
+                            href = link.attrs['href']
+                            match = re.search(MERCATINO_ID_PATTERN, href)
+                            url = 'https://www.mercatinomusicale.com' + href
+                            listing_id = match.group(1)
+                            if listing_id not in old_products:
+                                keyword = attuale[req]["beauty"]["keyword"]
+                                category = attuale[req]["beauty"]["category"]
+                                region = attuale[req]["beauty"]["region"]
+                                reparto = attuale[req]["beauty"]["reparto"]
+                                brand = attuale[req]["beauty"]["brand"]
+                                title_span = item.find('span', class_='tit')
+                                title = title_span.text
+                                opt_span = item.find('span', class_='prz')
+                                price = opt_span.text
+                                message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
+                                attuale[req]['products'].append(listing_id)
+                                self.telegram_message(message)                            
+                    except:
+                        self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
+                    finally:
+                        time.sleep(30)
                     if len(attuale[req]['products']) > 2500:
-                        attuale[req]['products'] = attuale[req]['products'][30:]
+                        attuale[req]['products'] = attuale[req]['products'][30:]      
+            else:
+                if len(attuale) == 0:
                     time.sleep(30)
-            # print("Fine richieste Mercatino")
-            [richieste[req].update({'products': attuale[req]['products']}) for req in richieste.keys() if req in attuale]
+            [richieste_mercatino[req].update({'products': attuale[req]['products']}) for req in richieste_mercatino.keys() if req in attuale.keys()]
 
 
 if __name__ == "__main__":
@@ -681,4 +706,4 @@ if __name__ == "__main__":
     load_requests()
     app = App()
     app.mainloop()
-    save_requests()
+    save_all()

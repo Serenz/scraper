@@ -1,2 +1,2 @@
 Set objShell = CreateObject("WScript.Shell")
-objShell.Run "scraper.bat", 0, True
+objShell.Run "supp.bat", 0, True
