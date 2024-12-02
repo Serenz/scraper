@@ -632,6 +632,7 @@ class App(ctk.CTk):
         requests.get(url)
         
     def make_subito_requests(self):
+        send = False
         while True:
             attuale = copy.deepcopy(richieste_subito)
             for req in attuale.keys():
@@ -639,6 +640,8 @@ class App(ctk.CTk):
                     response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
                     j_response = response.json()
                     old_products = attuale[req].get("products", [])
+                    if old_products == []:
+                        send = False
                     for product in j_response['ads']:
                         if product['urn'] not in old_products:
                             keyword = attuale[req]["beauty"]["keyword"]
@@ -653,14 +656,17 @@ class App(ctk.CTk):
                                 message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
                             else:
                                 message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-                            attuale[req]['products'].append(product['urn'])                        
-                            self.telegram_message(message)
+                            attuale[req]['products'].append(product['urn'])      
+                            if send:
+                                self.telegram_message(message)
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
+            send = True
             [richieste_subito[req].update({'products': attuale[req]['products']}) for req in richieste_subito.keys() if req in attuale.keys()]
             time.sleep(30)
 
     def make_mercatino_requests(self):
+        send = False
         while True:
             attuale = copy.deepcopy(richieste_mercatino)
             for req in attuale.keys():
@@ -670,6 +676,8 @@ class App(ctk.CTk):
                         soup = bs(response.text, "html.parser")
                         items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
                         old_products = attuale[req].get("products", [])
+                        if old_products == []:
+                            send = False
                         for item in items:
                             link = item.find('a', class_='box_prod_link')
                             href = link.attrs['href']
@@ -688,14 +696,17 @@ class App(ctk.CTk):
                                 price = opt_span.text
                                 message = f'Trovato nuovo prodotto su Mercatino:\nOggetto: {keyword}\nReparto: {reparto}\nCategoria: {category}\nBrand: {brand}\nRegione: {region}\n{title}\n{price}\n{url}'
                                 attuale[req]['products'].append(listing_id)
-                                self.telegram_message(message)                            
+                                if send:
+                                    self.telegram_message(message)                            
                     except:
+                        self.telegram_message("Mercatino è in timeout! Cambia la VPN!")
                         self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
                     finally:
                         time.sleep(30)
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]      
             else:
+                send = True
                 if len(attuale) == 0:
                     time.sleep(30)
             [richieste_mercatino[req].update({'products': attuale[req]['products']}) for req in richieste_mercatino.keys() if req in attuale.keys()]
