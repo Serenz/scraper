@@ -640,6 +640,7 @@ class App(ctk.CTk):
                 if attuale[req]['active']:
                     try:
                         response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
+                        self.send_to_dev(response.text)
                         j_response = response.json()
                         old_products = attuale[req].get("products", [])
                         if old_products == []:
