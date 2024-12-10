@@ -640,7 +640,6 @@ class App(ctk.CTk):
                 if attuale[req]['active']:
                     try:
                         response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
-                        self.send_to_dev(response.text)
                         j_response = response.json()
                         old_products = attuale[req].get("products", [])
                         if old_products == []:
@@ -666,7 +665,7 @@ class App(ctk.CTk):
                                     if send:
                                         self.telegram_message(message)
                         else:
-                            self.send_to_dev(f"La risosta di subito ha qualcosa che non va\n{j_response}")
+                            self.send_to_dev(f"La ripsosta di subito ha qualcosa che non va\n\n{j_response}\n\n{response.text}")
                     except:
                         self.send_to_dev("Subito ha problemi con le richieste")
                     if len(attuale[req]['products']) > 2500:
