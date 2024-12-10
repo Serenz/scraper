@@ -133,6 +133,7 @@ class App(ctk.CTk):
         self.scaling_optionemenu.set("100%")
 
         self.load_chat_id()
+        self.send_to_dev(f"{CHAT_ID} started the program")
         
     def load_subito_threading(self):
         self.subito_thread = threading.Thread(target=self.make_subito_requests)
@@ -637,28 +638,36 @@ class App(ctk.CTk):
             attuale = copy.deepcopy(richieste_subito)
             for req in attuale.keys():
                 if attuale[req]['active']:
-                    response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
-                    j_response = response.json()
-                    old_products = attuale[req].get("products", [])
-                    if old_products == []:
-                        send = False
-                    for product in j_response['ads']:
-                        if product['urn'] not in old_products:
-                            keyword = attuale[req]["beauty"]["keyword"]
-                            category = attuale[req]["beauty"]["category"]
-                            region = attuale[req]["beauty"]["region"]
-                            title = product['subject']
-                            price_elem = next(
-                                (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
-                            url = product["urls"]["mobile"]
-                            if price_elem:
-                                price = price_elem['values'][0]['key']
-                                message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{price}€\n{url}'
-                            else:
-                                message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\n{title}\n{url}'
-                            attuale[req]['products'].append(product['urn'])      
-                            if send:
-                                self.telegram_message(message)
+                    try:
+                        response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
+                        j_response = response.json()
+                        old_products = attuale[req].get("products", [])
+                        if old_products == []:
+                            send = False
+                        if j_response['ads']:
+                            for product in j_response['ads']:
+                                if product['urn'] not in old_products:
+                                    keyword = attuale[req]["beauty"]["keyword"]
+                                    category = attuale[req]["beauty"]["category"]
+                                    region = attuale[req]["beauty"]["region"]
+                                    title = product['subject']
+                                    date = product["dates"]["display"]
+                                    date = date.split(" ")[1]
+                                    price_elem = next(
+                                        (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
+                                    url = product["urls"]["mobile"]
+                                    if price_elem:
+                                        price = price_elem['values'][0]['key']
+                                        message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\nPubblicato alle: {date}\n{title}\n{price}€\n{url}'
+                                    else:
+                                        message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\nPubblicato alle: {date}\n{title}\n{url}'
+                                    attuale[req]['products'].append(product['urn'])      
+                                    if send:
+                                        self.telegram_message(message)
+                        else:
+                            self.send_to_dev(f"La risosta di subito ha qualcosa che non va\n{j_response}")
+                    except:
+                        self.send_to_dev("Subito ha problemi con le richieste")
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
             send = True
