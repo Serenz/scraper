@@ -196,19 +196,19 @@ class App(ctk.CTk):
             richieste_mercatino[id]["active"] = 1 - active
             save_mercatino_requests()
 
-    def check_new(self, richieste, params):
+    def check_new(self, richieste, beauty):
         for req in richieste.keys():
-            if richieste[req]['params'] == params:
+            if richieste[req]['beauty'] == beauty:
                 return False
         return True
 
-    def add_subito_request(self, params, beauty):
+    def add_subito_request(self, params, beauty, url):
         if richieste_subito:
             id = str(max((int(x) for x in richieste_subito.keys())) + 1)
         else:
             id = str(0)
-        if self.check_new(richieste_subito, params):
-            richieste_subito[id] = {'params': params, 'active': 1, 'products': [], 'beauty': beauty}
+        if self.check_new(richieste_subito, beauty):
+            richieste_subito[id] = {'params': params, 'active': 1, 'products': [], 'beauty': beauty, 'url': url}
             save_subito_requests()
 
     def add_mercatino_request(self, params, beauty):
@@ -216,7 +216,7 @@ class App(ctk.CTk):
             id = str(max((int(x) for x in richieste_mercatino.keys())) + 1)
         else:
             id = str(0)
-        if self.check_new(richieste_mercatino, params):
+        if self.check_new(richieste_mercatino, beauty):
             richieste_mercatino[id] = {'params': params, 'active': 1, 'products': [], 'beauty': beauty}
             save_mercatino_requests()
 
@@ -420,33 +420,22 @@ class App(ctk.CTk):
         keyword = self.subito_keyword.get()
         category = self.subito_category.get()
         region = self.subito_region.get()
-        shipping = self.subito_shipping.get()  # 1 checked, 0 not checked
-        title = self.subito_titlesearch.get()
         tipo = self.subito_type.get()
-        if category in S_CATEGORIE.keys():
-            params = {
-                'q': keyword,
-                'c': str(S_CATEGORIE.get(category)),
-                't': str(S_TYPE.get(tipo)),
-                'r': str(S_REGIONI.get(region)),
-                'qso': str(bool(title)).lower(),  # cerca solo nel titolo (true/false)
-                'shp': str(bool(shipping)).lower(),  # spedizione disponibile (ture/false)
-                'urg': 'false',  # annunci urgenti (true/false)
-                'sort': 'datedesc',  # (relevance/datadesc/priceasc/pricedesc) priceasc = dal meno caro
-                'lim': '30',
-                'start': '0',
-            }
-            beauty = {
-                'keyword': keyword,
-                'category': category,
-                'type': tipo,
-                'region': region
-            }
-            self.add_subito_request(params, beauty)
-            self.reload_subito_listing()
-            self.subito_keyword.delete(0, "end")
-        else:
-            self.open_wrong_category(category)
+        url_category = str(S_CATEGORIE.get(category))
+        url = SUBITO_URL + url_category + "/"
+        params = {
+            'q': keyword,
+            'sort': 'datedesc',  # (relevance/datadesc/priceasc/pricedesc) priceasc = dal meno caro
+        }
+        beauty = {
+            'keyword': keyword,
+            'category': category.strip(),
+            'type': tipo,
+            'region': region
+        }
+        self.add_subito_request(params, beauty, url)
+        self.reload_subito_listing()
+        self.subito_keyword.delete(0, "end")
 
     def validate_mercatino(self):
         if self.mercatino_search_confirmation:
@@ -546,7 +535,7 @@ class App(ctk.CTk):
                                                     font=("Calibri", 17))
             self.subito_region_label.grid(row=0, column=2, padx=20, pady=(10, 0))
             self.subito_region = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
-                                                values=list(S_REGIONI.keys()))
+                                                values=list(S_REGIONI.keys()), state="disabled")
             self.subito_region.grid(row=1, column=2, padx=20)
 
             self.subito_shipping_label = ctk.CTkLabel(self.searchview.tab("Subito"), text="Spedizione", anchor="w",
@@ -566,7 +555,7 @@ class App(ctk.CTk):
                                                 font=("Calibri", 17))
             self.subito_type_label.grid(row=3, column=2, padx=20, pady=(25, 0))
             self.subito_type = ctk.CTkOptionMenu(self.searchview.tab("Subito"), width=200,
-                                                values=list(S_TYPE.keys()))
+                                                values=list(S_TYPE.keys()), state="disabled")
             self.subito_type.grid(row=4, column=2, padx=20)
 
             self.subito_search_button = ctk.CTkButton(self.searchview.tab("Subito"), text="Cerca", font=("Calibri", 20),
@@ -639,33 +628,29 @@ class App(ctk.CTk):
             for req in attuale.keys():
                 if attuale[req]['active']:
                     try:
-                        response = requests.get(SUBITO_URL, params=attuale[req]['params'], headers=SUBITO_HEADERS)
-                        j_response = response.json()
+                        response = requests.get(attuale[req]["url"], params=attuale[req]['params'], headers=SUBITO_HEADERS)
+                        soup = bs(response.text, "html.parser")
+                        datas = soup.find('script', id='__NEXT_DATA__')
+                        json_text = datas.string
+                        data = json.loads(json_text)
+                        items_list = data["props"]["pageProps"]["initialState"]["items"]["list"]
                         old_products = attuale[req].get("products", [])
-                        if old_products == []:
-                            send = False
-                        if j_response['ads']:
-                            for product in j_response['ads']:
-                                if product['urn'] not in old_products:
-                                    keyword = attuale[req]["beauty"]["keyword"]
-                                    category = attuale[req]["beauty"]["category"]
-                                    region = attuale[req]["beauty"]["region"]
-                                    title = product['subject']
-                                    date = product["dates"]["display"]
-                                    date = date.split(" ")[1]
-                                    price_elem = next(
-                                        (elem for elem in product['features'] if elem.get('label') == "Prezzo"), None)
-                                    url = product["urls"]["mobile"]
-                                    if price_elem:
-                                        price = price_elem['values'][0]['key']
-                                        message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\nPubblicato alle: {date}\n{title}\n{price}€\n{url}'
-                                    else:
-                                        message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\nPubblicato alle: {date}\n{title}\n{url}'
-                                    attuale[req]['products'].append(product['urn'])      
-                                    if send:
-                                        self.telegram_message(message)
-                        else:
-                            self.send_to_dev(f"La ripsosta di subito ha qualcosa che non va\n\n{j_response}\n\n{response.text}")
+                        for item in items_list:
+                            urn = item["item"]["urn"]
+                            if urn not in old_products:
+                                keyword = attuale[req]["beauty"]["keyword"]
+                                category = attuale[req]["beauty"]["category"]
+                                region = attuale[req]["beauty"]["region"]
+                                title = item["item"]["subject"]
+                                date = item["item"]["date"].split()[1]
+                                price = item["item"]["features"].get("/price", None)
+                                if price:
+                                    price = price["values"][0]["key"]
+                                url = item["item"]["urls"]["default"]
+                                message = f'Trovato nuovo prodotto su Subito:\nOggetto: {keyword}\nCategoria: {category}\nRegione: {region}\nPubblicato alle: {date}\n{title}\n{price}€\n{url}'
+                                attuale[req]['products'].append(urn)
+                                if send:
+                                    self.telegram_message(message)
                     except:
                         self.send_to_dev("Subito ha problemi con le richieste")
                     if len(attuale[req]['products']) > 2500:
