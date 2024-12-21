@@ -27,3 +27,23 @@ MERCATINO_HEADERS = {
 }
 
 MERCATINO_ID_PATTERN = r"_id(\d+)\.html"
+
+EBAY_HEADERS = {
+    'Referer': 'https://www.ebay.com/b/Vintage-Electronic-Drums/181174/bn_16566434?LH_BIN=1&LH_ItemCondition=4%7C10&mag=1&rt=nc',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+    'sec-ch-ua-full-version': '"131.0.6778.205"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-model': '""',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-ch-ua-platform-version': '"15.0.0"',
+}
+
+EBAY_PARAMS = {
+    'LH_BIN': '1',
+    'LH_ItemCondition': '4|10',
+    '_sop': '10',
+    'mag': '1',
+    'rt': 'nc',
+}

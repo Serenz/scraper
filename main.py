@@ -9,7 +9,7 @@ import tkinter as tk
 import customtkinter as ctk
 from pathlib import Path
 from bs4 import BeautifulSoup as bs
-from utils.headers import MERCATINO_HEADERS, MERCATINO_URL, SUBITO_HEADERS, SUBITO_URL, MERCATINO_ID_PATTERN
+from utils.headers import *
 from utils.my_token import TOKEN, DEV_ID
 
 
@@ -49,9 +49,16 @@ def load_subito_requests():
     with open(req_path, "r") as f:
         richieste_subito = json.load(f)
 
+def load_ebay_requests():
+    global richieste_ebay
+    req_path = Path(os.getcwd()) / "utils" / "richieste_ebay.json"
+    with open(req_path, "r") as f:
+        richieste_ebay = json.load(f)
+
 def load_requests():
     load_subito_requests()
     load_mercatino_requests()
+    load_ebay_requests()
 
 def save_subito_requests():
     req_path = Path(os.getcwd()) / "utils" / "richieste_subito.json"
@@ -63,9 +70,15 @@ def save_mercatino_requests():
     with open(req_path, "w") as f:
         json.dump(richieste_mercatino, f, indent=4)
 
+def save_ebay_requests():
+    req_path = Path(os.getcwd()) / "utils" / "richieste_ebay.json"
+    with open(req_path, "w") as f:
+        json.dump(richieste_ebay, f, indent=4)
+
 def save_all():
     save_subito_requests()
     save_mercatino_requests()
+    save_ebay_requests()
 
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -114,10 +127,13 @@ class App(ctk.CTk):
         self.listview.grid(row=1, column=1, columnspan=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
         self.listview.add("Subito")
         self.listview.add("Mercatino")
+        self.listview.add("Ebay")
         self.listview.tab("Subito").grid_columnconfigure(0, weight=1)
         self.listview.tab("Subito").grid_rowconfigure(0, weight=1)
         self.listview.tab("Mercatino").grid_columnconfigure(0, weight=1)
         self.listview.tab("Mercatino").grid_rowconfigure(0, weight=1)
+        self.listview.tab("Ebay").grid_columnconfigure(0, weight=1)
+        self.listview.tab("Ebay").grid_rowconfigure(0, weight=1)
 
         self.subito_list = ctk.CTkScrollableFrame(self.listview.tab("Subito"), label_text="Tracking prodotti Subito.it")
         self.subito_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -128,6 +144,11 @@ class App(ctk.CTk):
         self.mercatino_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.mercatino_list.grid_columnconfigure((1, 2, 3, 4, 5), weight=1)
         self.mercatino_list.grid_columnconfigure(0, weight=0)
+
+        self.ebay_list = ctk.CTkScrollableFrame(self.listview.tab("Ebay"), label_text="Tracking prodotti Ebay")
+        self.ebay_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.ebay_list.grid_columnconfigure((0, 1), weight=0)
+        # self.ebay_list.grid_columnconfigure(0, weight=0)
 
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
@@ -145,16 +166,23 @@ class App(ctk.CTk):
         self.mercatino_thread = threading.Thread(target=self.make_mercatino_requests)
         self.mercatino_thread.daemon = True
         self.mercatino_thread.start()
+
+    def load_ebay_threading(self):
+        self.ebay_thread = threading.Thread(target=self.make_ebay_requests)
+        self.ebay_thread.daemon = True
+        self.ebay_thread.start()
     
     def load_threading(self):
         self.load_subito_threading()
         self.load_mercatino_threading()
+        self.load_ebay_threading()
 
     def load_all(self):
         self.load_subito_search()
         self.reload_subito_listing()
         self.load_mercatino_search()
         self.reload_mercatino_listing()
+        self.reload_ebay_listing()
         self.load_threading()
 
     def open_chat_id_event(self):
@@ -191,10 +219,14 @@ class App(ctk.CTk):
             active = richieste_subito[id]["active"]
             richieste_subito[id]["active"] = 1 - active
             save_subito_requests()
-        else:
+        elif website == "mercatino":
             active = richieste_mercatino[id]["active"]
             richieste_mercatino[id]["active"] = 1 - active
             save_mercatino_requests()
+        elif website == "ebay":
+            active = richieste_ebay[id]["active"]
+            richieste_ebay[id]["active"] = 1 - active
+            save_ebay_requests()
 
     def check_new(self, richieste, beauty):
         for req in richieste.keys():
@@ -359,6 +391,36 @@ class App(ctk.CTk):
             delete.configure(command=lambda id=id: self.open_delete_confirmation(id, website="mercatino"))
             delete.grid(row=len(self.mercatino_list_switches) + 1, column=7, padx=10, pady=(0, 20), sticky='ns')
         self.mercatino_list.update()
+
+    def load_ebay_listing_headers(self):
+        ebay_listing_active_label = ctk.CTkLabel(self.ebay_list, text="ON/OFF", anchor="center",
+                                                        font=("Calibri", 25))
+        ebay_listing_active_label.grid(row=0, column=0, padx=10, pady=(0, 0))
+        ebay_listing_category_label = ctk.CTkLabel(self.ebay_list, text="CATEGORIA", anchor="center",
+                                                        font=("Calibri", 25))
+        ebay_listing_category_label.grid(row=0, column=1, padx=10, pady=(0, 0))
+
+    def reload_ebay_listing(self, id: str = None):
+        for widget in self.ebay_list.winfo_children():
+            widget.destroy()
+
+        self.load_ebay_listing_headers()
+        self.ebay_list_switches = []
+        for id in richieste_ebay.keys():
+            ebay_header_separator = tk.ttk.Separator(self.ebay_list, orient="horizontal")
+            ebay_header_separator.grid(row=len(self.ebay_list_switches) + 1, column=0, columnspan=6, padx=(20, 20),
+                                         pady=(30, 10), sticky="ew")
+
+            switch_var = ctk.IntVar(value=richieste_ebay[id]['active'])
+            switch = ctk.CTkSwitch(master=self.ebay_list, variable=switch_var, text="")
+            switch.grid(row=len(self.ebay_list_switches) + 2, column=0, padx=(60, 0), pady=(0, 20), sticky='ns')
+            switch.configure(command=lambda id=id: self.toggle_request_track(id, website="ebay"))
+            self.ebay_list_switches.append((switch, id))
+
+            category = ctk.CTkLabel(self.ebay_list, text=richieste_ebay[id]['category'], anchor="center",
+                                    font=("Calibri", 15))
+            category.grid(row=len(self.ebay_list_switches) + 1, column=1, padx=10, pady=(0, 20), sticky='ns')
+        self.ebay_list.update()
 
     def autocomplete_subito_category(self, event):
         typed_text = self.subito_category.get()  # Ottieni il testo digitato nel Combobox
@@ -670,8 +732,6 @@ class App(ctk.CTk):
                         soup = bs(response.text, "html.parser")
                         items = soup.find('div', id='search_result').find_all('div', class_='box_prod box_prod_linked')
                         old_products = attuale[req].get("products", [])
-                        if old_products == []:
-                            send = False
                         for item in items:
                             link = item.find('a', class_='box_prod_link')
                             href = link.attrs['href']
@@ -705,6 +765,42 @@ class App(ctk.CTk):
                     time.sleep(30)
             [richieste_mercatino[req].update({'products': attuale[req]['products']}) for req in richieste_mercatino.keys() if req in attuale.keys()]
 
+    def make_ebay_requests(self):
+        send = False
+        while True:
+            attuale = copy.deepcopy(richieste_ebay)
+            for req in attuale.keys():
+                if attuale[req]['active']:                    
+                    try:
+                        response = requests.get(attuale[req]["url"], params=EBAY_PARAMS, headers=EBAY_HEADERS)
+                        soup = bs(response.text, "html.parser")
+                        items = soup.find('ul', class_='brwrvr__item-results brwrvr__item-results--list').find_all('li', class_='brwrvr__item-card brwrvr__item-card--list')
+                        old_products = attuale[req].get("products", [])
+                        for item in items:
+                            link = item.find('a', class_='brwrvr__item-card__image-link')
+                            url = link.attrs['href']
+                            title = item.find('h3').text.strip("New Listing")
+                            price = item.find('span', class_="textual-display bsig__price bsig__price--displayprice").text
+                            shipping = item.find('span', class_="textual-display bsig__price bsig__price--displayprice").text
+                            match = re.search(r'/(?:itm|p)/(\d+)\?', url)
+                            listing_id = match.group(1)
+                            if listing_id not in old_products:
+                                message = f'Trovato nuovo prodotto su Ebay nella categoria {attuale[req]["category"]}\n{title}\nPrezzo: {price}\nSpedizione: {shipping}\n{url}'
+                                attuale[req]['products'].append(listing_id)
+                                if send:
+                                    self.telegram_message(message)
+                    except:
+                        self.telegram_message("Ebay è in timeout! Cambia la VPN!")
+                        self.send_to_dev(f"Something wrong with Ebay")
+                    finally:
+                        time.sleep(30)
+                    if len(attuale[req]['products']) > 2500:
+                        attuale[req]['products'] = attuale[req]['products'][30:]      
+            else:
+                send = True
+                if len(attuale) == 0:
+                    time.sleep(30)
+            [richieste_ebay[req].update({'products': attuale[req]['products']}) for req in richieste_ebay.keys() if req in attuale.keys()]
 
 if __name__ == "__main__":
     load_mappings()
