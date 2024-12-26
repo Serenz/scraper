@@ -1,0 +1,14 @@
+{
+    "0": {
+        "active": 1,
+        "products": [],
+        "category": "Keyboards and Synths",
+        "url": "https://reverb.com/marketplace?product_type=keyboards-and-synths&condition=used"
+    },
+    "1": {
+        "active": 1,
+        "products": [],
+        "category": "Drums and Percussion",
+        "url": "https://reverb.com/marketplace?condition=used&product_type=drums-and-percussion&category=electronic-drums"
+    }
+}

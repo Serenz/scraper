@@ -11,7 +11,14 @@ from pathlib import Path
 from bs4 import BeautifulSoup as bs
 from utils.headers import *
 from utils.my_token import TOKEN, DEV_ID
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import chromedriver_autoinstaller
 
+chromedriver_autoinstaller.install()
 
 def load_mappings():
     global M_BRANDS, M_CATEGORIE, M_ORDINE, M_REPARTO, M_TIPO, M_ZONA, S_CATEGORIE, S_REGIONI, S_TYPE
@@ -55,10 +62,17 @@ def load_ebay_requests():
     with open(req_path, "r") as f:
         richieste_ebay = json.load(f)
 
+def load_reverb_requests():
+    global richieste_reverb
+    req_path = Path(os.getcwd()) / "utils" / "richieste_reverb.json"
+    with open(req_path, "r") as f:
+        richieste_reverb = json.load(f)
+
 def load_requests():
     load_subito_requests()
     load_mercatino_requests()
     load_ebay_requests()
+    load_reverb_requests()
 
 def save_subito_requests():
     req_path = Path(os.getcwd()) / "utils" / "richieste_subito.json"
@@ -75,10 +89,16 @@ def save_ebay_requests():
     with open(req_path, "w") as f:
         json.dump(richieste_ebay, f, indent=4)
 
+def save_reverb_requests():
+    req_path = Path(os.getcwd()) / "utils" / "richieste_reverb.json"
+    with open(req_path, "w") as f:
+        json.dump(richieste_reverb, f, indent=4)
+
 def save_all():
     save_subito_requests()
     save_mercatino_requests()
     save_ebay_requests()
+    save_reverb_requests()
 
 
 ctk.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
@@ -128,12 +148,15 @@ class App(ctk.CTk):
         self.listview.add("Subito")
         self.listview.add("Mercatino")
         self.listview.add("Ebay")
+        self.listview.add("Reverb")
         self.listview.tab("Subito").grid_columnconfigure(0, weight=1)
         self.listview.tab("Subito").grid_rowconfigure(0, weight=1)
         self.listview.tab("Mercatino").grid_columnconfigure(0, weight=1)
         self.listview.tab("Mercatino").grid_rowconfigure(0, weight=1)
         self.listview.tab("Ebay").grid_columnconfigure(0, weight=1)
         self.listview.tab("Ebay").grid_rowconfigure(0, weight=1)
+        self.listview.tab("Reverb").grid_columnconfigure(0, weight=1)
+        self.listview.tab("Reverb").grid_rowconfigure(0, weight=1)
 
         self.subito_list = ctk.CTkScrollableFrame(self.listview.tab("Subito"), label_text="Tracking prodotti Subito.it")
         self.subito_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
@@ -148,10 +171,15 @@ class App(ctk.CTk):
         self.ebay_list = ctk.CTkScrollableFrame(self.listview.tab("Ebay"), label_text="Tracking prodotti Ebay")
         self.ebay_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.ebay_list.grid_columnconfigure((0, 1), weight=0)
-        # self.ebay_list.grid_columnconfigure(0, weight=0)
+
+        self.reverb_list = ctk.CTkScrollableFrame(self.listview.tab("Reverb"), label_text="Tracking prodotti Reverb")
+        self.reverb_list.grid(row=0, column=0, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.reverb_list.grid_columnconfigure((0, 1), weight=0)
 
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
+
+        self.driver = webdriver.Chrome()
 
         self.load_chat_id()
         self.send_to_dev(f"{CHAT_ID} started the program")
@@ -171,11 +199,17 @@ class App(ctk.CTk):
         self.ebay_thread = threading.Thread(target=self.make_ebay_requests)
         self.ebay_thread.daemon = True
         self.ebay_thread.start()
+
+    def load_reverb_threading(self):
+        self.reverb_thread = threading.Thread(target=self.make_reverb_requests)
+        self.reverb_thread.daemon = True
+        self.reverb_thread.start()
     
     def load_threading(self):
         self.load_subito_threading()
         self.load_mercatino_threading()
         self.load_ebay_threading()
+        self.load_reverb_threading()
 
     def load_all(self):
         self.load_subito_search()
@@ -183,6 +217,7 @@ class App(ctk.CTk):
         self.load_mercatino_search()
         self.reload_mercatino_listing()
         self.reload_ebay_listing()
+        self.reload_reverb_listing()
         self.load_threading()
 
     def open_chat_id_event(self):
@@ -227,6 +262,10 @@ class App(ctk.CTk):
             active = richieste_ebay[id]["active"]
             richieste_ebay[id]["active"] = 1 - active
             save_ebay_requests()
+        elif website == "reverb":
+            active = richieste_reverb[id]["active"]
+            richieste_reverb[id]["active"] = 1 - active
+            save_reverb_requests()
 
     def check_new(self, richieste, beauty):
         for req in richieste.keys():
@@ -421,6 +460,36 @@ class App(ctk.CTk):
                                     font=("Calibri", 15))
             category.grid(row=len(self.ebay_list_switches) + 1, column=1, padx=10, pady=(0, 20), sticky='ns')
         self.ebay_list.update()
+
+    def load_reverb_listing_headers(self):
+        reverb_listing_active_label = ctk.CTkLabel(self.reverb_list, text="ON/OFF", anchor="center",
+                                                        font=("Calibri", 25))
+        reverb_listing_active_label.grid(row=0, column=0, padx=10, pady=(0, 0))
+        reverb_listing_category_label = ctk.CTkLabel(self.reverb_list, text="CATEGORIA", anchor="center",
+                                                        font=("Calibri", 25))
+        reverb_listing_category_label.grid(row=0, column=1, padx=10, pady=(0, 0))
+
+    def reload_reverb_listing(self, id: str = None):
+        for widget in self.reverb_list.winfo_children():
+            widget.destroy()
+
+        self.load_reverb_listing_headers()
+        self.reverb_list_switches = []
+        for id in richieste_reverb.keys():
+            reverb_header_separator = tk.ttk.Separator(self.reverb_list, orient="horizontal")
+            reverb_header_separator.grid(row=len(self.reverb_list_switches) + 1, column=0, columnspan=6, padx=(20, 20),
+                                         pady=(30, 10), sticky="ew")
+
+            switch_var = ctk.IntVar(value=richieste_reverb[id]['active'])
+            switch = ctk.CTkSwitch(master=self.reverb_list, variable=switch_var, text="")
+            switch.grid(row=len(self.reverb_list_switches) + 2, column=0, padx=(60, 0), pady=(0, 20), sticky='ns')
+            switch.configure(command=lambda id=id: self.toggle_request_track(id, website="reverb"))
+            self.reverb_list_switches.append((switch, id))
+
+            category = ctk.CTkLabel(self.reverb_list, text=richieste_reverb[id]['category'], anchor="center",
+                                    font=("Calibri", 15))
+            category.grid(row=len(self.reverb_list_switches) + 1, column=1, padx=10, pady=(0, 20), sticky='ns')
+        self.reverb_list.update()
 
     def autocomplete_subito_category(self, event):
         typed_text = self.subito_category.get()  # Ottieni il testo digitato nel Combobox
@@ -801,6 +870,50 @@ class App(ctk.CTk):
                 if len(attuale) == 0:
                     time.sleep(30)
             [richieste_ebay[req].update({'products': attuale[req]['products']}) for req in richieste_ebay.keys() if req in attuale.keys()]
+
+    def make_reverb_requests(self):
+        send = False
+        while True:
+            attuale = copy.deepcopy(richieste_reverb)
+            for req in attuale.keys():
+                if attuale[req]['active']:    
+                    driver = webdriver.Chrome()
+                    try:
+                        url = "https://reverb.com/marketplace?product_type=keyboards-and-synths&condition=used"
+                        driver.get(url)
+                        time.sleep(10)
+                        WebDriverWait(driver, 20).until(
+                            EC.presence_of_element_located((By.CLASS_NAME, "rc-listing-grid__item"))
+                        )
+                        products = driver.find_elements(By.CLASS_NAME, "rc-listing-grid__item")
+                        old_products = attuale[req].get("products", [])
+                        for product in products:
+                            try:
+                                title_element = product.find_element(By.CLASS_NAME, "rc-listing-card__title")
+                                title = title_element.text
+                                price_element = product.find_element(By.CLASS_NAME, "rc-price-block__price")
+                                price = price_element.text
+                                link_element = product.find_element(By.CLASS_NAME, "rc-listing-card__title-link")
+                                link = link_element.get_attribute("href")
+                                if link not in old_products:
+                                    message = f'Trovato nuovo prodotto su Reverb nella categoria {attuale[req]["category"]}\n{title}\nPrezzo: {price}\n{link}'
+                                    attuale[req]['products'].append(link)
+                                    if send:
+                                        self.telegram_message(message)
+                            except:
+                                print("Dettagli del prodotto non trovati")
+                    except:
+                        print("Qualcosa è andato storto con Reverb")
+                    finally:
+                        driver.quit()
+                        time.sleep(30)
+                    if len(attuale[req]['products']) > 2500:
+                        attuale[req]['products'] = attuale[req]['products'][30:]      
+            else:
+                send = True
+                if len(attuale) == 0:
+                    time.sleep(30)
+            [richieste_reverb[req].update({'products': attuale[req]['products']}) for req in richieste_reverb.keys() if req in attuale.keys()]
 
 if __name__ == "__main__":
     load_mappings()
