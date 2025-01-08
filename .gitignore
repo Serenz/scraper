@@ -3,3 +3,5 @@ chat_id.txt
 __pycache__
 richieste_mercatino.json
 richieste_subito.json
+richieste_ebay.json
+richieste_reverb.json

@@ -179,7 +179,16 @@ class App(ctk.CTk):
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
 
-        self.driver = webdriver.Chrome()
+        # Set up Chrome options
+        self.chrome_options = Options()
+        self.chrome_options.add_argument("--start-minimized")  # Start the browser minimized
+        self.chrome_options.add_argument("--disable-infobars")  # Disable Chrome's info bars
+        self.chrome_options.add_argument("--disable-notifications")  # Disable notifications
+        self.chrome_options.add_argument("--disable-popup-blocking")  # Disable popup blocking
+
+        # To prevent focus, set window size and position (optional)
+        self.chrome_options.add_argument("--window-size=800,600")
+        self.chrome_options.add_argument("--window-position=3000,2000")  # Move off-screen
 
         self.load_chat_id()
         self.send_to_dev(f"{CHAT_ID} started the program")
@@ -877,9 +886,9 @@ class App(ctk.CTk):
             attuale = copy.deepcopy(richieste_reverb)
             for req in attuale.keys():
                 if attuale[req]['active']:    
-                    driver = webdriver.Chrome()
+                    driver = webdriver.Chrome(options=self.chrome_options)
                     try:
-                        url = "https://reverb.com/marketplace?product_type=keyboards-and-synths&condition=used"
+                        url = attuale[req]["url"]
                         driver.get(url)
                         time.sleep(10)
                         WebDriverWait(driver, 20).until(
@@ -895,11 +904,14 @@ class App(ctk.CTk):
                                 price = price_element.text
                                 link_element = product.find_element(By.CLASS_NAME, "rc-listing-card__title-link")
                                 link = link_element.get_attribute("href")
-                                if link not in old_products:
-                                    message = f'Trovato nuovo prodotto su Reverb nella categoria {attuale[req]["category"]}\n{title}\nPrezzo: {price}\n{link}'
-                                    attuale[req]['products'].append(link)
-                                    if send:
-                                        self.telegram_message(message)
+                                match = re.search(r'/item/(\d+)', link)
+                                if match:
+                                    item_id = match.group(1)
+                                    if item_id not in old_products:
+                                        message = f'Trovato nuovo prodotto su Reverb nella categoria {attuale[req]["category"]}\n{title}\nPrezzo: {price}\n{link}'
+                                        attuale[req]['products'].append(item_id)
+                                        if send:
+                                            self.telegram_message(message)
                             except:
                                 print("Dettagli del prodotto non trovati")
                     except:
