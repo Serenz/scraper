@@ -70,7 +70,7 @@
             "83021611"
         ],
         "category": "Keyboards and Synths",
-        "url": "https://reverb.com/marketplace?product_type=keyboards-and-synths&condition=used"
+        "url": "https://reverb.com/it/marketplace?product_type=keyboards-and-synths&condition=used"
     },
     "1": {
         "active": 1,
@@ -128,6 +128,6 @@
             "86133435"
         ],
         "category": "Drums and Percussion",
-        "url": "https://reverb.com/marketplace?condition=used&product_type=drums-and-percussion&category=electronic-drums"
+        "url": "https://reverb.com/it/marketplace?condition=used&product_type=drums-and-percussion&category=electronic-drums"
     }
 }
