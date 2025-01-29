@@ -761,6 +761,14 @@ class App(ctk.CTk):
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={DEV_ID}&text={message}"
         requests.get(url)
         
+    def send_file_to_dev(self, file_path):
+        url = f"https://api.telegram.org/bot{TOKEN}/sendDocument"
+        files = {"document": open(file_path, "rb")}
+        data = {"chat_id": DEV_ID}
+        
+        response = requests.post(url, data=data, files=files)
+        return response.json()  # To check for success or errors
+
     def make_subito_requests(self):
         send = False
         while True:
@@ -868,9 +876,20 @@ class App(ctk.CTk):
                                 if send:
                                     self.telegram_message(message)
                     except:
-                        self.telegram_message("Ebay è in timeout! Cambia la VPN!")
+                        # self.telegram_message("Ebay è in timeout! Cambia la VPN!")
                         self.send_to_dev(f"Something wrong with Ebay")
+                        ebay_error_path = Path(os.getcwd()) / "tmp" / "ebay_error.html"
+                        with open(ebay_error_path, "w", encoding="utf-8") as f:
+                            f.write(response.text)
+                        error_message_response = self.send_file_to_dev(ebay_error_path)
+                        self.send_to_dev(error_message_response)
+                        self.toggle_request_track(req, "ebay")
                     finally:
+                        # ebay_try_path = Path(os.getcwd()) / "tmp" / "ebay_try.html"
+                        # with open(ebay_try_path, "w", encoding="utf-8") as f:
+                        #     f.write(response.text)
+                        # try_message = self.send_file_to_dev(ebay_try_path)
+                        # self.send_to_dev(try_message)
                         time.sleep(30)
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]      
