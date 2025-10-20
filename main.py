@@ -800,6 +800,7 @@ class App(ctk.CTk):
                                 if send:
                                     self.telegram_message(message)
                     except:
+                        self.telegram_message("Subito è in timeout! Cambia la VPN!")
                         response = requests.get(attuale[req]["url"], params=attuale[req]['params'], headers=SUBITO_HEADERS)
                         self.send_to_dev(f"Subito ha problemi con le richieste\nRESPONSE {response}")
                     if len(attuale[req]['products']) > 2500:
