@@ -800,7 +800,8 @@ class App(ctk.CTk):
                                 if send:
                                     self.telegram_message(message)
                     except:
-                        self.send_to_dev("Subito ha problemi con le richieste")
+                        response = requests.get(attuale[req]["url"], params=attuale[req]['params'], headers=SUBITO_HEADERS)
+                        self.send_to_dev(f"Subito ha problemi con le richieste\nRESPONSE {response}")
                     if len(attuale[req]['products']) > 2500:
                         attuale[req]['products'] = attuale[req]['products'][30:]
             send = True
@@ -840,7 +841,8 @@ class App(ctk.CTk):
                                     self.telegram_message(message)                            
                     except:
                         self.telegram_message("Mercatino è in timeout! Cambia la VPN!")
-                        self.send_to_dev("Something went wrong with Mercatino!! (Probably IP timeout)")
+                        response = requests.get(MERCATINO_URL, params=attuale[req]['params'], headers=MERCATINO_HEADERS)
+                        self.send_to_dev(f"Something went wrong with Mercatino!! (Probably IP timeout)\n{response}")
                     finally:
                         time.sleep(30)
                     if len(attuale[req]['products']) > 2500:
@@ -921,7 +923,7 @@ class App(ctk.CTk):
                                 title = title_element.text
                                 price_element = product.find_element(By.CLASS_NAME, "rc-price-block__price")
                                 price = price_element.text
-                                link_element = product.find_element(By.CLASS_NAME, "rc-listing-card__title-link")
+                                link_element = product.find_element(By.CLASS_NAME, "rc-listing-card__title-element")
                                 link = link_element.get_attribute("href")
                                 match = re.search(r'/item/(\d+)', link)
                                 if match:
